@@ -38,5 +38,24 @@ class NodeTopic(Node):
             to_object_id=node.id
         )
 
+    def edge_count(self):
+        return Edge.objects.filter(
+            from_content_type=ContentType.objects.get_for_model(self),
+            from_object_id=self.id
+        ).count()
+
+    @staticmethod
+    def all_edges_for_user(user):
+        # Get all Node instances for the user
+        node_ct = ContentType.objects.get_for_model(NodeTopic)
+        nodes = NodeTopic.objects.filter(user=user)
+
+        node_ids = nodes.values_list('id', flat=True)
+
+        return Edge.objects.filter(
+            from_content_type=node_ct,
+            from_object_id__in=node_ids
+        )
+
     def __str__(self):
         return self.title

@@ -18,5 +18,12 @@ class Node(models.Model):
     def edge_to(self, node):
         raise NotImplementedError("Subclasses must implement this method.")
 
+    def edge_count(self):
+        raise NotImplementedError("Subclasses must implement this method.")
+
+    @staticmethod
+    def all_edges_for_user(user):
+        raise NotImplementedError("Subclasses must implement this method.")
+
     def __str__(self):
         raise NotImplementedError("Subclasses must implement this method.")
