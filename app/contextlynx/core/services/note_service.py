@@ -16,32 +16,43 @@ class NoteService:
     def create_note(self, user, data_raw):
         existing_topics = NodeTopic.objects.filter(user=user)
 
-        sanitized_json = self.gen_ai_service.generate_topics_and_summary(data_raw, existing_topics)
-        topics_json = sanitized_json.get('topics')
+        data_json = self.gen_ai_service.generate_topics_and_summary(data_raw, existing_topics)
+        topics_json = data_json.get('topics')
 
-        short_summary = sanitized_json.get('short_summary')
+        short_summary = data_json.get('short_summary')
         word_embedding = self.word_embedding_service.create_word_embedding(short_summary)
 
         note = NodeNote.objects.create(
             user=user,
             data_raw=data_raw,
             word_embedding=word_embedding,
-            data_sanitized_md=sanitized_json.get('data_sanitized_md'),
-            title=sanitized_json.get('title'),
-            short_summary=sanitized_json.get('short_summary'),
-            language=sanitized_json.get('language'),
+            data_sanitized_md=data_json.get('data_sanitized_md'),
+            title=data_json.get('title'),
+            short_summary=data_json.get('short_summary'),
+            language=data_json.get('language'),
             data_type="TEXT"
         )
 
         topics = set()
         for topic_json in topics_json:
-            if topic_json.get('is_new') == True:
-                topic = self.topic_service.create_topic(
-                    user,
-                    topic_json.get('topic'),
-                    sanitized_json.get('language'))
-            elif topic_json.get('id') != None:
-                topic = NodeTopic.objects.get(id=topic_json.get('id'))
+            if topic_json.get('id') == None:
+                # get topic if it exists for user
+                topic = NodeTopic.objects.filter(user=user, title=topic_json.get('topic')).first()
+
+                if topic == None:
+                    topic = self.topic_service.create_topic(
+                        user,
+                        topic_json.get('topic'),
+                        data_json.get('language'))
+            else:
+                # check if topic with id exists for user
+                topic = NodeTopic.objects.filter(id=topic_json.get('id'), user=user, title=topic_json.get('topic')).first()
+
+                if topic == None:
+                    topic = self.topic_service.create_topic(
+                        user,
+                        topic_json.get('topic'),
+                        data_json.get('language'))
 
             self._create_edge_for_topic(note, topic)
             topics.add(topic)

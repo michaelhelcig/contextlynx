@@ -30,8 +30,9 @@ class TopicService:
         if not topic1.has_edge_to(topic2) and not topic2.has_edge_to(topic1):
             similarity = get_cosine_similarity(topic1.word_embedding.embedding_normalized, topic2.word_embedding.embedding_normalized)
 
-            Edge.objects.create(
-                from_node=topic1,
-                to_node=topic2,
-                similarity=similarity
-            )
+            if similarity > 0.7:
+                Edge.objects.create(
+                    from_node=topic1,
+                    to_node=topic2,
+                    similarity=similarity
+                )
