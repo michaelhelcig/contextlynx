@@ -18,7 +18,7 @@ def note(request):
 
         if not data_raw:
             messages.error(request, 'Content is required')
-            return redirect(reverse('write_note'))  # Redirect back to the form page
+            return redirect(reverse('create_note'))  # Redirect back to the form page
 
         # Create note using the authenticated user
         new_note = NoteService().create_note(request.user, data_raw)

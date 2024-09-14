@@ -12,5 +12,11 @@ class Node(models.Model):
     class Meta:
         abstract = True
 
+    def has_edge_to(self, node):
+        raise NotImplementedError("Subclasses must implement this method.")
+
+    def edge_to(self, node):
+        raise NotImplementedError("Subclasses must implement this method.")
+
     def __str__(self):
         raise NotImplementedError("Subclasses must implement this method.")

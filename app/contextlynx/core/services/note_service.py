@@ -33,6 +33,7 @@ class NoteService:
             data_type="TEXT"
         )
 
+        topics = set()
         for topic_json in topics_json:
             if topic_json.get('is_new') == True:
                 topic = self.topic_service.create_topic(
@@ -43,6 +44,9 @@ class NoteService:
                 topic = NodeTopic.objects.get(id=topic_json.get('id'))
 
             self._create_edge_for_topic(note, topic)
+            topics.add(topic)
+
+        self.topic_service.ensure_edges_for_topics(topics)
         return note
 
     def _create_edge_for_topic(self, note, topic):
