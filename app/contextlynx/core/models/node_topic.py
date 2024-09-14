@@ -1,12 +1,42 @@
 from django.db import models
 from .node import Node
 from .edge import Edge
-from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
+
+class NodeTopicDataType(models.TextChoices):
+    OTHER = 'OTHER'
+    PERSON = 'PERSON'
+    ORGANIZATION = 'ORGANIZATION'
+    LOCATION = 'LOCATION'
+    DATE = 'DATE'
+    EVENT = 'EVENT'
+    PRODUCT = 'PRODUCT'
+    WORK_OF_ART = 'WORK_OF_ART'
+    LAW = 'LAW'
+    LANGUAGE = 'LANGUAGE'
+    QUANTITY = 'QUANTITY'
+    PERCENT = 'PERCENT'
+    MONEY = 'MONEY'
+    TIME = 'TIME'
+    URL = 'URL'
+    EMAIL = 'EMAIL'
+    PHONE_NUMBER = 'PHONE_NUMBER'
+    NATIONALITY = 'NATIONALITY'
+    RELIGION = 'RELIGION'
+    TITLE = 'TITLE'
+    VEHICLE = 'VEHICLE'
+    ANIMAL = 'ANIMAL'
+    PLANT = 'PLANT'
+    MEDICAL_CONDITION = 'MEDICAL_CONDITION'
+    SPORTS_TEAM = 'SPORTS_TEAM'
+    INDUSTRY = 'INDUSTRY'
+    COMPANY = 'COMPANY'
+
 
 class NodeTopic(Node):
     disabled = models.BooleanField(default=False)
     title = models.CharField(max_length=255)
+    data_type = models.CharField(max_length=20, choices=NodeTopicDataType.choices, default=NodeTopicDataType.OTHER)
 
     def has_edge_to(self, node):
         """

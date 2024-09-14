@@ -1,5 +1,5 @@
 from .word_embedding_service import WordEmbeddingService, get_cosine_similarity
-from ..models import NodeTopic
+from ..models import NodeTopic, NodeTopicDataType
 from ..models import Edge
 
 class TopicService:
@@ -7,14 +7,15 @@ class TopicService:
         self.word_embedding_service = WordEmbeddingService()
         pass
 
-    def create_topic(self, user, title, language):
+    def create_topic(self, user, title, language, data_type=NodeTopicDataType.OTHER):
         embedding = self.word_embedding_service.create_word_embedding(title)
 
         topic = NodeTopic.objects.create(
             user=user,
             title=title,
             language=language,
-            word_embedding=embedding
+            word_embedding=embedding,
+            data_type=data_type
         )
 
         return topic

@@ -1,5 +1,5 @@
 from ..models import NodeNote
-from ..models import NodeTopic
+from ..models import NodeTopic, NodeTopicDataType
 from ..models import Edge
 from .word_embedding_service import WordEmbeddingService, get_cosine_similarity
 from .topic_service import TopicService
@@ -36,23 +36,17 @@ class NoteService:
         topics = set()
         for topic_json in topics_json:
             if topic_json.get('id') == None:
-                # get topic if it exists for user
                 topic = NodeTopic.objects.filter(user=user, title=topic_json.get('topic')).first()
-
-                if topic == None:
-                    topic = self.topic_service.create_topic(
-                        user,
-                        topic_json.get('topic'),
-                        data_json.get('language'))
             else:
-                # check if topic with id exists for user
                 topic = NodeTopic.objects.filter(id=topic_json.get('id'), user=user, title=topic_json.get('topic')).first()
 
-                if topic == None:
-                    topic = self.topic_service.create_topic(
-                        user,
-                        topic_json.get('topic'),
-                        data_json.get('language'))
+            if topic == None:
+                topic = self.topic_service.create_topic(
+                    user,
+                    topic_json.get('topic'),
+                    data_json.get('language'),
+                    topic_json.get('data_type')
+                )
 
             self._create_edge_for_topic(note, topic)
             topics.add(topic)

@@ -5,29 +5,51 @@ window.renderKnowledgeGraph = function(data) {
         height = window.innerHeight;
         svg.attr("width", width).attr("height", height);
         simulation.force("center", d3.forceCenter(width / 2, height / 2));
+        backgroundRect.attr("width", width).attr("height", height);
     }
 
     // Set initial SVG size
     let width = window.innerWidth;
     let height = window.innerHeight;
 
-    const svg = d3.select("#knowledge-graph")
-        .append("svg")
+    const container = d3.select("#knowledge-graph")
+        .style("width", "100%")
+        .style("height", "100vh")
+        .style("overflow", "hidden");
+
+    const svg = container.append("svg")
         .attr("width", width)
         .attr("height", height);
 
+    // Create a pattern for the background
+    const defs = svg.append("defs");
+    const pattern = defs.append("pattern")
+        .attr("id", "dot-pattern")
+        .attr("width", 10)
+        .attr("height", 10)
+        .attr("patternUnits", "userSpaceOnUse");
+
+    pattern.append("circle")
+        .attr("cx", 5)
+        .attr("cy", 5)
+        .attr("r", 1)
+        .attr("fill", "#ccc");
+
+    // Create a group for the graph elements
+    const g = svg.append("g");
+
     const simulation = d3.forceSimulation(data.nodes)
-        .force("link", d3.forceLink(data.links).id(d => d.id).distance(d => 400 * (1 - d.similarity))) // Increased link distance
-        .force("charge", d3.forceManyBody().strength(-800)) // Increased charge strength
+        .force("link", d3.forceLink(data.links).id(d => d.id).distance(d => 400 * (1 - d.similarity)))
+        .force("charge", d3.forceManyBody().strength(-800))
         .force("center", d3.forceCenter(width / 2, height / 2))
-        .force("collision", d3.forceCollide().radius(d => d.radius + 15)); // Increased collision radius
+        .force("collision", d3.forceCollide().radius(d => d.radius + 15));
 
     // Color scale for edges based on similarity
     const colorScale = d3.scaleLinear()
         .domain([0, 1])
         .range(["white", "black"]);
 
-    const link = svg.append("g")
+    const link = g.append("g")
         .selectAll("line")
         .data(data.links)
         .join("line")
@@ -35,7 +57,7 @@ window.renderKnowledgeGraph = function(data) {
         .attr("stroke-opacity", 0.8)
         .attr("stroke-width", 2);
 
-    const node = svg.append("g")
+    const node = g.append("g")
         .selectAll("g")
         .data(data.nodes)
         .join("g")
@@ -48,7 +70,7 @@ window.renderKnowledgeGraph = function(data) {
     }
 
     function calculateFontSize(d) {
-        return d.type === "NodeTopic" ? "10px" : "8px"; // Smaller font size to ensure text fits
+        return d.type === "NodeTopic" ? "10px" : "8px";
     }
 
     const circles = node.append("circle")
@@ -56,14 +78,14 @@ window.renderKnowledgeGraph = function(data) {
             d.radius = calculateRadius(d);
             return d.radius;
         })
-        .attr("fill", d => d.type === "NodeTopic" ? "orange" : "green");
+        .attr("fill", d => d.color);
 
     function fitTextInCircle(text, radius, fontSize) {
         const words = text.split(/\s+/);
         let lines = [];
         let line = [];
         let totalHeight = 0;
-        const lineHeight = parseInt(fontSize, 10) * 1.2; // Adjusted line height based on font size
+        const lineHeight = parseInt(fontSize, 10) * 1.2;
         const maxWidth = radius * 1.8;
 
         for (let word of words) {
@@ -89,7 +111,6 @@ window.renderKnowledgeGraph = function(data) {
             totalHeight += lineHeight;
         }
 
-        // Ensure text fits inside the node by adjusting line count
         while (totalHeight > radius * 1.8 && lines.length > 1) {
             lines.pop();
             totalHeight -= lineHeight;
@@ -164,6 +185,15 @@ window.renderKnowledgeGraph = function(data) {
             .on("drag", dragged)
             .on("end", dragended);
     }
+
+    // Add zoom behavior
+    const zoom = d3.zoom()
+        .scaleExtent([0.1, 4])
+        .on("zoom", (event) => {
+            g.attr("transform", event.transform);
+        });
+
+    svg.call(zoom);
 
     // Update size on window resize
     window.addEventListener('resize', updateSize);

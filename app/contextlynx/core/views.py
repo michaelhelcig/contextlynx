@@ -10,13 +10,13 @@ def create_note(request):
 
 class MyNotesView(ListView):
     model = NodeNote
-    template_name = 'core/my_notes.html'
+    template_name = 'core/notes_list.html'
     context_object_name = 'notes'
     ordering = ['-created_at']
 
 
 class GraphView(TemplateView):
-    template_name = 'core/graph_view.html'
+    template_name = 'core/knowledge.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -25,12 +25,20 @@ class GraphView(TemplateView):
         nodes = []
         links = []
 
+        colors = {
+            "PERSON": "#FFB74D",
+            "ORGANIZATION": "#FFB3BA",
+            "LOCATION": "#C5E1A5",
+            "OTHER": "#B3E5FC"
+        }
+
         # Add NodeTopics
         for topic in NodeTopic.objects.filter(user=user):
             nodes.append({
                 "id": f"topic_{topic.id}",
                 "title": topic.title,
                 "type": "NodeTopic",
+                "color": colors[topic.data_type] if topic.data_type in colors else colors["OTHER"],
                 "edgeCount": topic.edge_count()
             })
 
@@ -39,6 +47,7 @@ class GraphView(TemplateView):
             nodes.append({
                 "id": f"note_{note.id}",
                 "title": note.title,
+                "color": "lightgrey",
                 "type": "NodeNote"
             })
 

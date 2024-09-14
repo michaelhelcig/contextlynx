@@ -5,21 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ContextLynx</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-image: radial-gradient(circle, #d1d5db 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .floating-header {
+            position: fixed;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 1200px;
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+    </style>
 </head>
-<body class="bg-gray-100">
-    <nav class="bg-blue-600 p-4">
-        <div class="container mx-auto flex justify-between items-center">
-            <a href="/" class="text-white text-2xl font-bold">ContextLynx</a>
-            <div>
-                <a href="{% url 'create_note' %}" class="text-white mr-4">Write Note</a>
-                <a href="{% url 'notes' %}" class="text-white mr-4">My Notes</a>
-                <a href="{% url 'knowledge' %}" class="text-white">My Knowledge</a>
+<body class="bg-gray-100 pt-24">
+    <nav class="floating-header">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="/" class="text-blue-600 text-2xl font-bold">ContextLynx</a>
+            <div class="flex items-center space-x-3">
+                <a href="{% url 'create_note' %}" class="text-gray-700 hover:text-blue-600 text-2xl mx-1">✍️</a>
+                <a href="{% url 'notes' %}" class="text-gray-700 hover:text-blue-600 text-2xl mx-1 border-l border-gray-200 pl-3">📒</a>
+                <a href="{% url 'knowledge' %}" class="text-gray-700 hover:text-blue-600 text-2xl mx-1 border-l border-gray-200 pl-3">🧠</a>
             </div>
         </div>
     </nav>
-    <div class="container mx-auto mt-8">
+    <div class="container mx-auto mt-8 px-4">
         {% block content %}{% endblock %}
     </div>
 </body>
 </html>
-
