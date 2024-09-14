@@ -4,20 +4,48 @@
 
 {% block content %}
 <div class="bg-white p-6 rounded-lg shadow-md">
-    <h2 class="text-2xl font-bold mb-4">📒</h2>
+    <h2 class="text-2xl font-bold mb-4">📒 Notes</h2>
     <ul>
         {% for note in notes %}
-        <li class="mb-4 p-4 border border-gray-200 rounded-lg">
-            <h3 class="text-xl font-bold mb-2">{{ note.title }}</h3>
-            <div class="text-gray-600 mb-2" id="note-preview-{{ forloop.counter }}" data-index="{{ forloop.counter }}">
+        <li class="relative mb-6 p-4 border border-gray-200 rounded-lg">
+
+            <!-- Picker for content view (top-right corner) -->
+            <div class="picker-container absolute top-2 right-2" data-index="{{ forloop.counter }}">
+                <button class="picker-option active" onclick="showContent(this, 'short')">Short</button>
+                <button class="picker-option" onclick="showContent(this, 'full')">Full</button>
+                <button class="picker-option" onclick="showContent(this, 'original')">Original</button>
+            </div>
+
+            <!-- Title and Date -->
+            <h3 class="text-xl font-bold mb-2">{{ note.title }}
+                <span class="text-gray-300 text-sm ml-4">{{ note.created_at|date:"F j, Y, g:i a" }}</span>
+            </h3>
+
+            <span class="inline-block px-3 py-1 text-sm font-semibold text-white {{ note.get_data_type_display|lower }}-badge rounded-full">
+                {{ note.get_data_type_display }}
+            </span>
+
+            <!-- Note content views -->
+            <div id="note-content-short-{{ forloop.counter }}" class="note-content">
                 {{ note.short_summary }}...
             </div>
-            <div class="hidden" id="note-full-{{ forloop.counter }}" data-index="{{ forloop.counter }}">
+            <div id="note-content-full-{{ forloop.counter }}" class="note-content hidden">
                 {{ note.data_sanitized_md|markdown_to_html|safe }}
             </div>
-            <button class="text-blue-600 hover:underline mt-2" data-index="{{ forloop.counter }}" onclick="toggleNoteContent(this)">
-                Expand
-            </button>
+            <div id="note-content-original-{{ forloop.counter }}" class="note-content hidden">
+                <pre class="bg-gray-100 p-4 rounded">{{ note.data_raw }}</pre>
+            </div>
+
+            <!-- Show related topics -->
+            <div class="mt-4">
+                <ul class="text-center text-modern-blue text-sm">
+                    {% for topic in note.related_topics %}
+                    <li class="inline">{{ topic.title }}{% if not forloop.last %} &middot; {% endif %}</li>
+                    {% empty %}
+                    <li>No related topics found.</li>
+                    {% endfor %}
+                </ul>
+            </div>
         </li>
         {% empty %}
         <li>No notes found.</li>
@@ -26,20 +54,118 @@
 </div>
 
 <script>
-function toggleNoteContent(button) {
-    const index = button.getAttribute('data-index');
-    const preview = document.getElementById(`note-preview-${index}`);
-    const fullContent = document.getElementById(`note-full-${index}`);
+function showContent(button, view) {
+    const index = button.parentElement.getAttribute('data-index');
 
-    if (fullContent.classList.contains('hidden')) {
-        preview.classList.add('hidden');
+    // Get all the content divs
+    const shortContent = document.getElementById(`note-content-short-${index}`);
+    const fullContent = document.getElementById(`note-content-full-${index}`);
+    const originalContent = document.getElementById(`note-content-original-${index}`);
+
+    // Hide all content
+    shortContent.classList.add('hidden');
+    fullContent.classList.add('hidden');
+    originalContent.classList.add('hidden');
+
+    // Show selected content
+    if (view === 'short') {
+        shortContent.classList.remove('hidden');
+    } else if (view === 'full') {
         fullContent.classList.remove('hidden');
-        button.textContent = 'Collapse';
-    } else {
-        preview.classList.remove('hidden');
-        fullContent.classList.add('hidden');
-        button.textContent = 'Expand';
+    } else if (view === 'original') {
+        originalContent.classList.remove('hidden');
     }
+
+    // Update active button state
+    const allButtons = button.parentElement.querySelectorAll('.picker-option');
+    allButtons.forEach(btn => btn.classList.remove('active'));
+    button.classList.add('active');
 }
 </script>
+
+<style>
+/* Custom badge styles based on note type */
+.text {
+    background-color: #1f2937; /* Darker, modern blue */
+}
+.link {
+    background-color: #2d3748; /* Slightly lighter modern blue */
+}
+
+/* Picker styling - Smaller, sleek, aligned to top-right corner */
+.picker-container {
+    display: inline-flex;
+    background-color: white; /* Matches the note container background */
+    border-radius: 6px;  /* Less rounded */
+    border: 1px solid #d1d5db;
+    overflow: hidden;
+    top: 0.5rem;
+    right: 0.5rem;
+    position: absolute;
+}
+
+.picker-option {
+    padding: 6px 12px;  /* Smaller padding */
+    font-size: 0.75rem;  /* Smaller font size */
+    color: #4a5568;
+    background-color: white; /* Same as the background */
+    border: none;
+    cursor: pointer;
+    outline: none;
+    transition: background-color 0.2s ease;
+}
+
+.picker-option.active {
+    background-color: #1f2937;  /* Darker modern blue */
+    color: white;
+}
+
+.picker-option:not(.active):hover {
+    background-color: #e2e8f0;
+}
+
+/* Note content visibility */
+.note-content {
+    display: none;
+}
+
+.note-content.hidden {
+    display: none;
+}
+
+.note-content:not(.hidden) {
+    display: block;
+}
+
+/* Positioning for created date */
+.relative {
+    position: relative;
+}
+.absolute {
+    position: absolute;
+}
+.top-2 {
+    top: 0.5rem;
+}
+.right-2 {
+    right: 0.5rem;
+}
+
+/* Date styling - pale gray */
+.text-gray-400 {
+    color: #a0aec0;  /* Pale gray */
+}
+
+/* Styling for related topics */
+.text-modern-blue {
+    color: #2d3748; /* Darker blue */
+}
+.text-center {
+    text-align: center;
+}
+.text-sm {
+    font-size: 0.875rem;
+}
+</style>
+
 {% endblock %}

@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from .node import Node
 from .edge import Edge
+from .node_topic import NodeTopic
 
 class DataType(models.TextChoices):
     TEXT = 'TEXT'
@@ -49,6 +50,23 @@ class NodeNote(Node):
             from_content_type=ContentType.objects.get_for_model(self),
             from_object_id=self.id
         ).count()
+
+
+    def related_topics(self, depth = 1):
+        """
+        Get all related topics for this note.
+        """
+        # Get all edges from this note
+        edges = Edge.objects.filter(
+            from_content_type=ContentType.objects.get_for_model(self),
+            from_object_id=self.id,
+            to_content_type=ContentType.objects.get_for_model(NodeTopic)
+        )
+
+        # Get all topics from these edges
+        topics = [edge.to_node for edge in edges]
+
+        return topics
 
     @staticmethod
     def all_edges_for_user(user):
