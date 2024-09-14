@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ContextLynx</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-blue-600 p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/" class="text-white text-2xl font-bold">ContextLynx</a>
+            <div>
+                <a href="{% url 'create_note' %}" class="text-white mr-4">Write Note</a>
+                <a href="{% url 'notes' %}" class="text-white mr-4">My Notes</a>
+                <a href="{% url 'knowledge' %}" class="text-white">My Knowledge</a>
+            </div>
+        </div>
+    </nav>
+    <div class="container mx-auto mt-8">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>
+
