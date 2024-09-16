@@ -5,39 +5,33 @@ def topic_summary_prompt(text, existing_topics_dto):
     topic_types = [choice for choice, _ in NodeTopicDataType.choices]
 
     system_prompt = f"""
-You are an advanced text analysis model analyzing text and doing Named Entity Recognition!
-Your task is to analyze the provided content and produce a summary of the main topics discussed using NER. 
-The most important part is to analyse the Topics.
-Follow these instructions:
+You are a Large language Model used for Topic and Context Recognition. 
+You are given a text and a list the context of the text in form of topics. 
 
-    Extract Main Topics:
-        Identify the main themes or subjects discussed in the text.
-        Use the provided topic IDs if relevant, but create new topics if necessary.
-        Ensure that you create as few topics as possible, using proper names of people, places, or things mentioned.
-        Most Important: Always use topics provided, if they fit the content!
-        Important: Make sure to remove all topics that are not relevant for the text.
-        Important: Make sure to create topic if not found in the existing topics.
+
+MOST IMPORTANT: REUSE TOPICS WHERE POSSIBLE 
+MOST IMPORTANT: KEEP TOPICS AS GENERAL AS POSSIBLE AND AVOID SPECIFIC DETAILS 
+MOST IMPORTANT: CAPTURE THE CONTEXT OF THE TEXT IN THE TOPICS
+
+Identify the main themes or subjects discussed in the text.
+Use the provided topic IDs if relevant, but create new topics if necessary.
+Ensure that you create as few topics as possible, using proper names of people, places, or things mentioned.
+Make sure to remove all topics that are not relevant for the text.
+Make sure to create topic if not found in the existing topics.
+Format the Topics in Title Case. 
     
-    Topic Types: {topic_types}
-        
-    Summarize the Content:
-        Provide a concise summary of the main topic.
-        Keep the summary under 500 characters.
-
-    Format the Output in Markdown:
-        Sanitize and format the text into Markdown, use headings, code, and lists where appropriate.
-        Ensure the content is equal to the original text in meaning and structure.
-
-    Output JSON Schema:
-    {{
-      "title": "string", // a short title for the provided content
-      "data_sanitized_md": "string", // the sanitized content in markdown format
-      "language": "string", // the language of the content, in the form of a two-letter code (e.g., "en" for English)
-      "short_summary": "string", // a short summary of the content
-      "topics": [
-        {{ title: str, data_type: str }}
-      ]
-    }}
+Topic Types: {topic_types}
+    
+Output JSON Schema:
+{{
+  "title": "string", // a short title for the provided content
+  "data_sanitized_md": "string", // the sanitized content in markdown format
+  "language": "string", // the language of the content, in the form of a two-letter code (e.g., "en" for English)
+  "short_summary": "string", // a short summary of the content under 500 chars
+  "topics": [
+    {{ title: str, data_type: str }}
+  ]
+}}
 """
 
 

@@ -5,7 +5,7 @@
     <form id="note-form" method="POST" action="{% url 'new_note' %}" class="w-full max-w-3xl flex items-center">
         {% csrf_token %}
         <!-- Chat bubble (textarea) -->
-        <textarea id="data_raw" name="data_raw" rows="12" class="flex-1 px-4 py-3 border rounded-lg shadow-lg resize-none"></textarea>
+        <textarea id="data_raw" name="data_raw" rows="25" class="flex-1 px-4 py-3 border rounded-lg shadow-lg resize-none"></textarea>
 
         <!-- Round button with arrow up next to the chat bubble -->
         <button id="submit-button" type="submit" class="bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center hover:bg-blue-700 shadow-lg ml-3">

@@ -5,7 +5,6 @@ import numpy as np
 from ..models import WordEmbedding
 
 class WordEmbeddingService:
-
     def __init__(self):
         self.embedding_model = 'bert-base-uncased'
         self.tokenizer = BertTokenizer.from_pretrained(self.embedding_model)
@@ -30,6 +29,9 @@ class WordEmbeddingService:
         normalized_embeddings = embeddings / np.linalg.norm(embeddings)
         return normalized_embeddings.tolist()
 
+    @staticmethod
+    def get_cosine_similarity(embedding1, embedding2):
+        return cosine_similarity([embedding1], [embedding2])[0, 0]
 
-def get_cosine_similarity(embedding1, embedding2):
-    return cosine_similarity([embedding1], [embedding2])[0, 0]
+def get_word_embedding_service():
+    return WordEmbeddingService()

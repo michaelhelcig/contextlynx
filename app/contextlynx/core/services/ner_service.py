@@ -1,13 +1,20 @@
 import spacy
 from ..models import NodeTopicDataType
 
-
 class NERService:
-    def __init__(self):
-        self.model = 'en_core_web_lg'
-        self.nlp = spacy.load('en_core_web_lg')
+    _instance = None
 
-    def get_named_entities(self, text):
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super(NERService, cls).__new__(cls, *args, **kwargs)
+            cls._instance._initialize()
+        return cls._instance
+
+    def _initialize(self):
+        self.model = 'en_core_web_lg'
+        self.nlp = spacy.load(self.model)
+
+    def get_named_entities(self, text, existing_topics=None):
         doc = self.nlp(text)
         entities = []
 
@@ -20,7 +27,11 @@ class NERService:
                 'data_type': data_type,
             })
 
-        # Step 2: Filter out entities that are contained within others
+        # Step 2: Add existing topics to the entities list
+        if existing_topics:
+            entities.extend(existing_topics)
+
+        # Step 3: Filter out entities that are contained within others
         filtered_entities = []
         for i, entity in enumerate(entities):
             is_contained = False
@@ -35,7 +46,7 @@ class NERService:
             if not is_contained:
                 filtered_entities.append(entity)
 
-        # Step 3: Remove duplicates based on title and data_type
+        # Step 4: Remove duplicates based on title and data_type
         unique_entities = []
         seen = set()
         for entity in filtered_entities:

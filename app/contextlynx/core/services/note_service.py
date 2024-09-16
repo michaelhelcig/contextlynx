@@ -1,19 +1,18 @@
 from django.templatetags.i18n import language
 
 from ..models import NodeNote
-from ..models import NodeTopic, NodeTopicDataType
+from ..models import NodeTopic
 from ..models import Edge
-from .word_embedding_service import WordEmbeddingService, get_cosine_similarity
+from .word_embedding_service import WordEmbeddingService
 from .topic_service import TopicService
 from .nlp_service import NlpService
-from .ner_service import NERService
+
 
 class NoteService:
 
     def __init__(self):
         self.nlp_service = NlpService()
         self.word_embedding_service = WordEmbeddingService()
-        self.ner_service = NERService()
         self.topic_service = TopicService()
         pass
 
@@ -25,6 +24,7 @@ class NoteService:
 
         title = data_json.get('title')
         short_summary = data_json.get('short_summary')
+        data_sanitized_md = data_json.get('data_sanitized_md')
         language = data_json.get('language')
         word_embedding = self.word_embedding_service.create_word_embedding(short_summary)
 
@@ -32,7 +32,7 @@ class NoteService:
             user=user,
             data_raw=data_raw,
             word_embedding=word_embedding,
-            data_sanitized_md=data_json.get('data_sanitized_md'),
+            data_sanitized_md=data_sanitized_md,
             title=title,
             short_summary=short_summary,
             language=language,
@@ -40,7 +40,7 @@ class NoteService:
         )
 
         topics = set()
-        topics_json = data_json.get('topics')
+        topics_json = self.nlp_service.ner().get_named_entities(data_sanitized_md, topics_json)
 
         for topic_json in topics_json:
             topic_title = topic_json.get('title')
@@ -60,10 +60,14 @@ class NoteService:
             topics.add(topic)
 
         self.topic_service.ensure_edges_for_topics(topics)
+
+        #all_topics = NodeTopic.objects.filter(user=user)
+        #self.topic_service.ensure_edges_with_similarity(all_topics, 0.85)
+
         return note
 
     def _create_edge_for_topic(self, note, topic):
-        similarity = get_cosine_similarity(note.word_embedding.embedding_normalized, topic.word_embedding.embedding_normalized)
+        similarity = WordEmbeddingService.get_cosine_similarity(note.word_embedding.embedding_normalized, topic.word_embedding.embedding_normalized)
 
         edge = Edge.objects.create(
             from_node=note,

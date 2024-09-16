@@ -3,7 +3,15 @@ from django.conf import settings
 import json
 
 class OpenAiService:
-    def __init__(self):
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super(OpenAiService, cls).__new__(cls, *args, **kwargs)
+            cls._instance._initialize()
+        return cls._instance
+
+    def _initialize(self):
         self.api_key = settings.OPENAI_API_KEY
         self.client = OpenAI(api_key=self.api_key)
         self.model = "gpt-4o-mini"
@@ -48,5 +56,3 @@ class OpenAiService:
             print("Results: ", results)
 
         return results
-
-
