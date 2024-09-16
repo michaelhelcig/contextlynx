@@ -25,12 +25,27 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('note-form');
+    const textarea = document.getElementById('data_raw');
     const button = document.getElementById('submit-button');
     const buttonContent = document.getElementById('button-content');
 
-    form.addEventListener('submit', function() {
+    function showLoadingSpinner() {
         buttonContent.innerHTML = '<div class="loader"></div>';
         button.disabled = true;
+    }
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        showLoadingSpinner();
+        this.submit();
+    });
+
+    textarea.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            showLoadingSpinner();
+            form.submit();
+        }
     });
 });
 </script>

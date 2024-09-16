@@ -1,0 +1,36 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: bash /app/scripts/entrypoint-development.sh
+    volumes:
+      - .:/app
+    ports:
+      - 8000:8000
+    depends_on:
+      - coredb
+    environment:
+      - DJANGO_SETTINGS_MODULE=contextlynx.settings
+      - COREDB_NAME=${COREDB_NAME}
+      - COREDB_USER=${COREDB_USER}
+      - COREDB_PASSWORD=${COREDB_PASSWORD}
+      - COREDB_HOST=coredb
+      - DEBUG=True
+      - ENVIRONMENT=development
+    env_file:
+      - .env
+
+  coredb:
+    image: postgres:16
+    volumes:
+      - contextlynx_coredb:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=${COREDB_NAME}
+      - POSTGRES_USER=${COREDB_USER}
+      - POSTGRES_PASSWORD=${COREDB_PASSWORD}
+    env_file:
+      - .env
+
+volumes:
+  contextlynx_coredb:

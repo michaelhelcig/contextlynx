@@ -1,25 +1,31 @@
+from django.templatetags.i18n import language
+
 from ..models import NodeNote
 from ..models import NodeTopic, NodeTopicDataType
 from ..models import Edge
 from .word_embedding_service import WordEmbeddingService, get_cosine_similarity
 from .topic_service import TopicService
-from .genai_service import GenAiService
+from .nlp_service import NlpService
+from .ner_service import NERService
 
 class NoteService:
 
     def __init__(self):
-        self.gen_ai_service = GenAiService()
+        self.nlp_service = NlpService()
         self.word_embedding_service = WordEmbeddingService()
+        self.ner_service = NERService()
         self.topic_service = TopicService()
         pass
 
     def create_note(self, user, data_raw):
         existing_topics = NodeTopic.objects.filter(user=user)
 
-        data_json = self.gen_ai_service.generate_topics_and_summary(data_raw, existing_topics)
+        data_json = self.nlp_service.generate_topics_and_summary(data_raw, existing_topics)
         topics_json = data_json.get('topics')
 
+        title = data_json.get('title')
         short_summary = data_json.get('short_summary')
+        language = data_json.get('language')
         word_embedding = self.word_embedding_service.create_word_embedding(short_summary)
 
         note = NodeNote.objects.create(
@@ -27,25 +33,27 @@ class NoteService:
             data_raw=data_raw,
             word_embedding=word_embedding,
             data_sanitized_md=data_json.get('data_sanitized_md'),
-            title=data_json.get('title'),
-            short_summary=data_json.get('short_summary'),
-            language=data_json.get('language'),
+            title=title,
+            short_summary=short_summary,
+            language=language,
             data_type="TEXT"
         )
 
         topics = set()
-        for topic_json in topics_json:
-            if topic_json.get('id') == None:
-                topic = NodeTopic.objects.filter(user=user, title=topic_json.get('topic')).first()
-            else:
-                topic = NodeTopic.objects.filter(id=topic_json.get('id'), user=user, title=topic_json.get('topic')).first()
+        topics_json = data_json.get('topics')
 
-            if topic == None:
+        for topic_json in topics_json:
+            topic_title = topic_json.get('title')
+            topic_data_type = topic_json.get('data_type')
+
+            topic = NodeTopic.objects.filter(user=user, title=topic_title, data_type=topic_data_type).first()
+
+            if topic is None:
                 topic = self.topic_service.create_topic(
                     user,
-                    topic_json.get('topic'),
-                    data_json.get('language'),
-                    topic_json.get('data_type')
+                    topic_title,
+                    language,
+                    topic_data_type
                 )
 
             self._create_edge_for_topic(note, topic)

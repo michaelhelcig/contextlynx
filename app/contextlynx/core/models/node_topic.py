@@ -35,7 +35,7 @@ class NodeTopicDataType(models.TextChoices):
 
 class NodeTopic(Node):
     disabled = models.BooleanField(default=False)
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=512)
     data_type = models.CharField(max_length=20, choices=NodeTopicDataType.choices, default=NodeTopicDataType.OTHER)
 
     def has_edge_to(self, node):

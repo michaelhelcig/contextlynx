@@ -1,16 +1,17 @@
 from openai import OpenAI
 from django.conf import settings
-from ..utils import prompts
 import json
 
-class GenAiService:
-
+class OpenAiService:
     def __init__(self):
         self.api_key = settings.OPENAI_API_KEY
         self.client = OpenAI(api_key=self.api_key)
         self.model = "gpt-4o-mini"
 
-    def _generate_text(self, system_prompt, user_prompt, json_format=True):
+    def get_model(self):
+        return self.model
+
+    def generate_text(self, system_prompt, user_prompt, json_format=True):
         if settings.DEBUG:
             print("System Prompt: ", system_prompt)
             print("User Prompt: ", user_prompt)
@@ -48,7 +49,4 @@ class GenAiService:
 
         return results
 
-    def generate_topics_and_summary(self, text, existing_topics):
-        existing_topics_dto = [{'id': topic.id, 'topic': topic.title, 'data_type': topic.data_type} for topic in existing_topics]
-        system_prompt, user_prompt = prompts.topic_summary_prompt(text, existing_topics_dto)
-        return self._generate_text(system_prompt, user_prompt)
+

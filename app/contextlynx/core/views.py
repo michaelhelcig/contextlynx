@@ -1,9 +1,12 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views.generic import TemplateView
 from django.views.generic import ListView
 from django.utils.safestring import mark_safe
 import json
 from .models import NodeTopic, NodeNote, Edge
+
+def error_404(request, exception=None):
+    return redirect('/create')
 
 def create_note(request):
     return render(request, 'core/create_note.html')

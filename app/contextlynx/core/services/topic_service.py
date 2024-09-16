@@ -20,6 +20,14 @@ class TopicService:
 
         return topic
 
+    def ensure_topic(self, user, title, language, data_type=NodeTopicDataType.OTHER):
+        topic = NodeTopic.objects.filter(user=user, title=title, data_type=data_type).first()
+
+        if not topic:
+            topic = self.create_topic(user, title, language, data_type)
+
+        return topic
+
     def ensure_edges_for_topics(self, topics):
         # iterate over all topics and check if there is an edge between them
         for i, topic1 in enumerate(topics):
@@ -27,11 +35,12 @@ class TopicService:
                 if i != j:
                     self.ensure_edge_for_topic_pair(topic1, topic2)
 
-    def ensure_edge_for_topic_pair(self, topic1, topic2):
+    @staticmethod
+    def ensure_edge_for_topic_pair(topic1, topic2):
         if not topic1.has_edge_to(topic2) and not topic2.has_edge_to(topic1):
             similarity = get_cosine_similarity(topic1.word_embedding.embedding_normalized, topic2.word_embedding.embedding_normalized)
 
-            if similarity > 0.7:
+            if similarity > 0.5:
                 Edge.objects.create(
                     from_node=topic1,
                     to_node=topic2,
