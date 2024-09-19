@@ -3,7 +3,11 @@ from django.views.generic import TemplateView
 from django.views.generic import ListView
 from django.utils.safestring import mark_safe
 import json
-from .models import NodeTopic, NodeNote, Edge
+
+from openai import project
+
+from .models import NodeTopic, NodeNote, Edge, Project
+
 
 def error_404(request, exception=None):
     return redirect('/create')
@@ -24,6 +28,7 @@ class GraphView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
+        project = Project.get_or_create_default_project(user)
 
         nodes = []
         links = []
@@ -36,7 +41,7 @@ class GraphView(TemplateView):
         }
 
         # Add NodeTopics
-        for topic in NodeTopic.objects.filter(user=user):
+        for topic in NodeTopic.objects.filter(project=project):
             nodes.append({
                 "id": f"topic_{topic.id}",
                 "title": topic.title,
@@ -46,7 +51,7 @@ class GraphView(TemplateView):
             })
 
         # Add NodeNotes
-        for note in NodeNote.objects.filter(user=user):
+        for note in NodeNote.objects.filter(project=project):
             nodes.append({
                 "id": f"note_{note.id}",
                 "title": note.title,
@@ -55,7 +60,7 @@ class GraphView(TemplateView):
             })
 
         # Add edges
-        edges = set(NodeTopic.all_edges_for_user(user) | NodeNote.all_edges_for_user(user))
+        edges = set(Edge.objects.filter(project=project))
         for edge in edges:
             links.append({
                 "source": f"{'topic' if isinstance(edge.from_node, NodeTopic) else 'note'}_{edge.from_node.id}",

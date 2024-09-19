@@ -2,9 +2,12 @@ from django.db import models
 from .node import Node
 from .edge import Edge
 from django.contrib.contenttypes.models import ContentType
+from .embedding_node import NodeEmbedding
+from .embedding_word import WordEmbedding
 
-class NodeTopicDataType(models.TextChoices):
+class NodeTopicType(models.TextChoices):
     OTHER = 'OTHER'
+    CONCEPT = 'CONCEPT'
     PERSON = 'PERSON'
     ORGANIZATION = 'ORGANIZATION'
     LOCATION = 'LOCATION'
@@ -36,7 +39,17 @@ class NodeTopicDataType(models.TextChoices):
 class NodeTopic(Node):
     disabled = models.BooleanField(default=False)
     title = models.CharField(max_length=512)
-    data_type = models.CharField(max_length=20, choices=NodeTopicDataType.choices, default=NodeTopicDataType.OTHER)
+    data_type = models.CharField(max_length=20, choices=NodeTopicType.choices, default=NodeTopicType.OTHER)
+    language = models.CharField(max_length=10)
+
+    node_embedding = models.ForeignKey(
+        NodeEmbedding, on_delete=models.SET_NULL, null=True,
+        related_name='topic_node_embeddings'
+    )
+    word_embedding = models.ForeignKey(
+        WordEmbedding, on_delete=models.SET_NULL, null=True,
+        related_name='topic_word_embeddings'
+    )
 
     def has_edge_to(self, node):
         """
@@ -74,18 +87,13 @@ class NodeTopic(Node):
             from_object_id=self.id
         ).count()
 
-    @staticmethod
-    def all_edges_for_user(user):
-        # Get all Node instances for the user
-        node_ct = ContentType.objects.get_for_model(NodeTopic)
-        nodes = NodeTopic.objects.filter(user=user)
+    @classmethod
+    def for_word_embedding(cls, word_embedding_id):
+        return cls.objects.get(word_embedding_id=word_embedding_id)
 
-        node_ids = nodes.values_list('id', flat=True)
-
-        return Edge.objects.filter(
-            from_content_type=node_ct,
-            from_object_id__in=node_ids
-        )
+    @classmethod
+    def for_node_embedding(cls, node_embedding_id):
+        return cls.objects.get(node_embedding_id=node_embedding_id)
 
     def __str__(self):
         return self.title

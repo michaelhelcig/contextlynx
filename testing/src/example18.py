@@ -42,10 +42,10 @@ class WebpageScraperService:
 
 if __name__ == "__main__":
     scraper = WebpageScraperService()
-    url = "https://example.com"  # Replace with the URL you want to scrape
+    url = "https://memgraph.com/blog/how-node2vec-works"  # Replace with the URL you want to scrape
     text_content, html_content = scraper.get_content(url)
     if text_content and html_content:
         print("Text Content:")
         print(text_content)
         print("\nHTML Content:")
-        print(html_content)
+        #print(html_content)

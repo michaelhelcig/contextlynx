@@ -1,8 +1,8 @@
-from ..models import NodeTopicDataType
+from ..models import NodeTopicType
 
 
 def topic_summary_prompt(text, existing_topics_dto):
-    topic_types = [choice for choice, _ in NodeTopicDataType.choices]
+    topic_types = [choice for choice, _ in NodeTopicType.choices]
 
     system_prompt = f"""
 You are a Large language Model used for Topic and Context Recognition. 
@@ -24,10 +24,11 @@ Topic Types: {topic_types}
     
 Output JSON Schema:
 {{
+  "icon": "string", // EMOJI which fits the content
   "title": "string", // a short title for the provided content
-  "data_sanitized_md": "string", // the sanitized content in markdown format
+  "data_sanitized_md": "string", // the entire content provided, but sanitized and in markdown format, do not truncate anything
   "language": "string", // the language of the content, in the form of a two-letter code (e.g., "en" for English)
-  "short_summary": "string", // a short summary of the content under 500 chars
+  "short_summary": "string", // a short summary of the content under 500 tokens
   "topics": [
     {{ title: str, data_type: str }}
   ]
@@ -35,7 +36,7 @@ Output JSON Schema:
 """
 
 
-    existing_topics_string = "\n".join([f"title: {topic['title']}, data_type: {topic['data_type']}" for topic in existing_topics_dto])
+    existing_topics_string = "\n".join([f"title: \"{topic['title']}\", data_type: \"{topic['data_type']}\"" for topic in existing_topics_dto])
 
     user_prompt = f"""
 Existing topics:

@@ -7,44 +7,51 @@
     <h2 class="text-2xl font-bold mb-4">📒 Notes</h2>
     <ul>
         {% for note in notes %}
-        <li class="relative mb-6 p-4 border border-gray-200 rounded-lg">
-
-            <!-- Picker for content view (top-right corner) -->
-            <div class="picker-container absolute top-2 right-2" data-index="{{ forloop.counter }}">
-                <button class="picker-option active" onclick="showContent(this, 'short')">Short</button>
-                <button class="picker-option" onclick="showContent(this, 'full')">Full</button>
-                <button class="picker-option" onclick="showContent(this, 'original')">Original</button>
+        <li class="relative mb-6 border border-gray-200 rounded-lg flex">
+            <!-- Note Icon (5% width) -->
+            <div class="flex items-center justify-center w-[5%] bg-gray-50 rounded-l-lg">
+                <span class="text-2xl">{{ note.icon }}</span>
             </div>
 
-            <!-- Title and Date -->
-            <h3 class="text-xl font-bold mb-2">{{ note.title }}
-                <span class="text-gray-300 text-sm ml-4">{{ note.created_at|date:"F j, Y, g:i a" }}</span>
-            </h3>
+            <!-- Note Content (95% width) -->
+            <div class="w-[95%] p-4">
+                <!-- Picker for content view (top-right corner) -->
+                <div class="picker-container absolute top-2 right-2" data-index="{{ forloop.counter }}">
+                    <button class="picker-option active" onclick="showContent(this, 'short')">Short</button>
+                    <button class="picker-option" onclick="showContent(this, 'full')">Full</button>
+                    <button class="picker-option" onclick="showContent(this, 'original')">Original</button>
+                    <button class="picker-option" onclick="showContent(this, 'Input')">Input</button>
+                </div>
 
-            <span class="inline-block px-3 py-1 text-sm font-semibold text-white {{ note.get_data_type_display|lower }}-badge rounded-full">
-                {{ note.get_data_type_display }}
-            </span>
+                <!-- Title and Date -->
+                <h3 class="text-xl font-bold mb-2">{{ note.title }}
+                    <span class="text-gray-300 text-sm ml-4">{{ note.created_at|date:"F j, Y, g:i a" }}</span>
+                </h3>
 
-            <!-- Note content views -->
-            <div id="note-content-short-{{ forloop.counter }}" class="note-content">
-                {{ note.short_summary }}...
-            </div>
-            <div id="note-content-full-{{ forloop.counter }}" class="note-content hidden">
-                {{ note.data_sanitized_md|markdown_to_html|safe }}
-            </div>
-            <div id="note-content-original-{{ forloop.counter }}" class="note-content hidden">
-                <pre class="bg-gray-100 p-4 rounded">{{ note.data_raw }}</pre>
-            </div>
+                <!-- Note content views -->
+                <div id="note-content-short-{{ forloop.counter }}" class="note-content">
+                    {{ note.short_summary }}...
+                </div>
+                <div id="note-content-full-{{ forloop.counter }}" class="note-content hidden">
+                    {{ note.data_sanitized_md|markdown_to_html|safe }}
+                </div>
+                <div id="note-content-original-{{ forloop.counter }}" class="note-content hidden">
+                    <pre class="bg-gray-100 p-4 rounded">{{ note.data_raw }}</pre>
+                </div>
+                <div id="note-content-input-{{ forloop.counter }}" class="note-content hidden">
+                    <pre class="bg-gray-100 p-4 rounded">{{ note.data_input }}</pre>
+                </div>
 
-            <!-- Show related topics -->
-            <div class="mt-4">
-                <ul class="text-center text-modern-blue text-sm">
-                    {% for topic in note.related_topics %}
-                    <li class="inline">{{ topic.title }}{% if not forloop.last %} &middot; {% endif %}</li>
-                    {% empty %}
-                    <li>No related topics found.</li>
-                    {% endfor %}
-                </ul>
+                <!-- Show related topics -->
+                <div class="mt-4">
+                    <ul class="text-center text-modern-blue text-sm">
+                        {% for topic in note.related_topics %}
+                        <li class="inline">{{ topic.title }}{% if not forloop.last %} &middot; {% endif %}</li>
+                        {% empty %}
+                        <li>No related topics found.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
             </div>
         </li>
         {% empty %}
@@ -61,11 +68,13 @@ function showContent(button, view) {
     const shortContent = document.getElementById(`note-content-short-${index}`);
     const fullContent = document.getElementById(`note-content-full-${index}`);
     const originalContent = document.getElementById(`note-content-original-${index}`);
+    const inputContent = document.getElementById(`note-content-input-${index}`);
 
     // Hide all content
     shortContent.classList.add('hidden');
     fullContent.classList.add('hidden');
     originalContent.classList.add('hidden');
+    inputContent.classList.add('hidden');
 
     // Show selected content
     if (view === 'short') {
@@ -74,6 +83,8 @@ function showContent(button, view) {
         fullContent.classList.remove('hidden');
     } else if (view === 'original') {
         originalContent.classList.remove('hidden');
+    } else if (view === 'Input') {
+        inputContent.classList.remove('hidden');
     }
 
     // Update active button state
@@ -85,10 +96,10 @@ function showContent(button, view) {
 
 <style>
 /* Custom badge styles based on note type */
-.text {
+.text-badge {
     background-color: #1f2937; /* Darker, modern blue */
 }
-.link {
+.link-badge {
     background-color: #2d3748; /* Slightly lighter modern blue */
 }
 
@@ -137,6 +148,20 @@ function showContent(button, view) {
     display: block;
 }
 
+/* Styling for the ORIGINAL content to prevent overflow */
+pre {
+    white-space: pre-wrap;      /* Wraps the text to fit inside the container */
+    word-wrap: break-word;      /* Forces long words to break and wrap within the container */
+    overflow-wrap: break-word;  /* Ensures compatibility for long words */
+    overflow-x: auto;           /* Adds horizontal scrolling for extremely long lines */
+    background-color: #f7fafc;  /* Light background for preformatted text */
+    padding: 1rem;              /* Adds padding for better spacing */
+    border-radius: 0.5rem;      /* Rounded corners for the preformatted block */
+    border: 1px solid #e2e8f0;  /* Adds a light border for better visibility */
+    max-width: 100%;            /* Ensures the block doesn't overflow horizontally */
+    box-sizing: border-box;     /* Ensures padding is included in width calculations */
+}
+
 /* Positioning for created date */
 .relative {
     position: relative;
@@ -152,8 +177,8 @@ function showContent(button, view) {
 }
 
 /* Date styling - pale gray */
-.text-gray-400 {
-    color: #a0aec0;  /* Pale gray */
+.text-gray-300 {
+    color: #d1d5db;  /* Pale gray */
 }
 
 /* Styling for related topics */
@@ -165,6 +190,22 @@ function showContent(button, view) {
 }
 .text-sm {
     font-size: 0.875rem;
+}
+
+/* New styles for the icon container */
+.rounded-l-lg {
+    border-top-left-radius: 0.5rem;
+    border-bottom-left-radius: 0.5rem;
+}
+
+/* Ensure the note content takes up the full width of its container */
+.w-[90%] {
+    width: 90%;
+}
+
+/* Ensure the icon container takes up 10% of the width */
+.w-[10%] {
+    width: 10%;
 }
 </style>
 

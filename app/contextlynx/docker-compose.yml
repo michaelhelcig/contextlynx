@@ -22,9 +22,10 @@ services:
       - .env
 
   coredb:
-    image: postgres:16
+    image: pgvector/pgvector:pg16
     volumes:
       - contextlynx_coredb:/var/lib/postgresql/data/
+      - ./scripts/init-development.sql:/docker-entrypoint-initdb.d/init-development.sql
     environment:
       - POSTGRES_DB=${COREDB_NAME}
       - POSTGRES_USER=${COREDB_USER}

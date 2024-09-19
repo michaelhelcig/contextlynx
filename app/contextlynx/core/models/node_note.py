@@ -3,17 +3,30 @@ from django.contrib.contenttypes.models import ContentType
 from .node import Node
 from .edge import Edge
 from .node_topic import NodeTopic
+from .embedding_node import NodeEmbedding
+from .embedding_word import WordEmbedding
 
-class DataType(models.TextChoices):
+class NoteDataType(models.TextChoices):
     TEXT = 'TEXT'
-    LINK = 'LINK'
+    WEBPAGE = 'WEBPAGE'
 
 class NodeNote(Node):
+    icon = models.CharField(max_length=16, default='🗒')
     title = models.CharField(max_length=255)
     short_summary = models.TextField(null=True)
+    data_input = models.TextField()
     data_raw = models.TextField()
-    data_type = models.CharField(max_length=10, choices=DataType.choices)
+    data_type = models.CharField(max_length=10, choices=NoteDataType.choices)
     data_sanitized_md = models.TextField()
+
+    node_embedding = models.ForeignKey(
+        NodeEmbedding, on_delete=models.SET_NULL, null=True,
+        related_name='note_node_embeddings'
+    )
+    word_embedding = models.ForeignKey(
+        WordEmbedding, on_delete=models.SET_NULL, null=True,
+        related_name='note_word_embeddings'
+    )
 
     def has_edge_to(self, node):
         """
@@ -68,8 +81,16 @@ class NodeNote(Node):
 
         return topics
 
+    @classmethod
+    def for_word_embedding(cls, word_embedding_id):
+        return cls.objects.get(word_embedding_id=word_embedding_id)
+
+    @classmethod
+    def for_node_embedding(cls, node_embedding_id):
+        return cls.objects.get(node_embedding_id=node_embedding_id)
+
     @staticmethod
-    def all_edges_for_user(user):
+    def all_edges_for_project(user):
         # Get all Node instances for the user
         node_ct = ContentType.objects.get_for_model(NodeNote)
         nodes = NodeNote.objects.filter(user=user)

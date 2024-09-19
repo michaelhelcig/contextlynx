@@ -1,4 +1,5 @@
 from django.apps import AppConfig
+import psycopg2
 
 
 class CoreConfig(AppConfig):
@@ -10,4 +11,4 @@ class CoreConfig(AppConfig):
 
         init_service()
 
-        print(" 🔥 CoreConfig ready!")
+        print("🔥 Services ready!")

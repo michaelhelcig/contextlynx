@@ -14,14 +14,14 @@ from django.urls import reverse
 @login_required
 def note(request):
     try:
-        data_raw = request.POST.get('data_raw')  # Get 'data_raw' from form submission
+        data_input = request.POST.get('data_input')  # Get 'data_raw' from form submission
 
-        if not data_raw:
+        if not data_input:
             messages.error(request, 'Content is required')
             return redirect(reverse('create_note'))  # Redirect back to the form page
 
         # Create note using the authenticated user
-        new_note = NoteService().create_note(request.user, data_raw)
+        new_note = NoteService().create_note(request.user, data_input)
 
         # Add success message
         messages.success(request, 'Note saved successfully!')

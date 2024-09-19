@@ -15,9 +15,9 @@ class WordEmbeddingService:
             raise ValueError("Input text cannot be empty.")
 
         embedding = self._get_embedding(text)
-        word_embedding = WordEmbedding.objects.create(
-            model=self.embedding_model,
-            embedding_normalized=embedding
+        word_embedding = WordEmbedding(
+            embedding_model=self.embedding_model,
+            embedding_vector=embedding
         )
         return word_embedding
 

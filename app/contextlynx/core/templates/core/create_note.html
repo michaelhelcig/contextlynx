@@ -1,16 +1,18 @@
 {% extends 'core/base.html' %}
 
 {% block content %}
-<div class="fixed bottom-0 left-0 right-0 flex items-end justify-center p-4">
-    <form id="note-form" method="POST" action="{% url 'new_note' %}" class="w-full max-w-3xl flex items-center">
+<div class="fixed bottom-0 left-0 right-0 p-4">
+    <form id="note-form" method="POST" action="{% url 'new_note' %}" class="relative w-full max-w-4xl mx-auto">
         {% csrf_token %}
-        <!-- Chat bubble (textarea) -->
-        <textarea id="data_raw" name="data_raw" rows="25" class="flex-1 px-4 py-3 border rounded-lg shadow-lg resize-none"></textarea>
+        <div class="flex items-end">
+            <!-- Chat bubble (textarea) -->
+            <textarea id="data_input" name="data_input" rows="1" class="flex-grow px-4 py-3 mr-2 border rounded-lg shadow-lg resize-none overflow-hidden"></textarea>
 
-        <!-- Round button with arrow up next to the chat bubble -->
-        <button id="submit-button" type="submit" class="bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center hover:bg-blue-700 shadow-lg ml-3">
-            <span id="button-content">&#x2191;</span>
-        </button>
+            <!-- Round button with arrow up next to the chat bubble -->
+            <button id="submit-button" type="submit" class="bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center hover:bg-blue-700 shadow-lg">
+                <span id="button-content">&#x2191;</span>
+            </button>
+        </div>
     </form>
 </div>
 
@@ -25,7 +27,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('note-form');
-    const textarea = document.getElementById('data_raw');
+    const textarea = document.getElementById('data_input');
     const button = document.getElementById('submit-button');
     const buttonContent = document.getElementById('button-content');
 
@@ -47,15 +49,27 @@ document.addEventListener('DOMContentLoaded', function() {
             form.submit();
         }
     });
+
+    // Function to adjust textarea height
+    function adjustTextareaHeight() {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+    }
+
+    // Call the function on input
+    textarea.addEventListener('input', adjustTextareaHeight);
+
+    // Initialize the textarea height
+    adjustTextareaHeight();
 });
 </script>
 
 <style>
 /* Loader styling */
 .loader {
-    border: 4px solid rgba(0, 0, 0, 0.1); /* Light grey */
+    border: 4px solid rgba(0, 0, 0, 0.1);
     border-radius: 50%;
-    border-top: 4px solid #fff; /* White */
+    border-top: 4px solid #fff;
     width: 20px;
     height: 20px;
     animation: spin 1s linear infinite;
@@ -68,9 +82,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 /* Additional styling for textarea */
 textarea {
-    min-height: 300px; /* Ensure it's taller */
-    min-width: 500px; /* Ensure it's wider */
-    resize: none; /* Disable resizing if desired */
+    min-height: 48px;
+    max-height: 50vh;
+    transition: height 0.1s ease-out;
 }
 </style>
 

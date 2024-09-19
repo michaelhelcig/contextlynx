@@ -1,42 +1,59 @@
 from django.contrib import admin
-from django.contrib.contenttypes.models import ContentType
-from .models import User, NodeNote, NodeTopic, WordEmbedding, Edge
+from django.contrib.auth.admin import UserAdmin
+from .models import Project, Edge, NodeEmbedding, WordEmbedding, NodeNote, NodeTopic, User
 
-@admin.register(User)
-class UserAdmin(admin.ModelAdmin):
-    list_display = ('username', 'email', 'is_staff', 'is_active')
-    list_filter = ('is_staff', 'is_active')
-    search_fields = ('username', 'email')
+# Project Admin
+@admin.register(Project)
+class ProjectAdmin(admin.ModelAdmin):
+    list_display = ('title', 'uuid', 'user', 'created_at', 'updated_at')
+    search_fields = ('title', 'uuid')
+    list_filter = ('created_at', 'updated_at', 'user')
+    ordering = ('-created_at',)
 
-@admin.register(NodeNote)
-class NodeNoteAdmin(admin.ModelAdmin):
-    list_display = ('title', 'user', 'created_at', 'updated_at', 'data_type', 'language')
-    list_filter = ('data_type', 'language', 'created_at', 'updated_at')
-    search_fields = ('title', 'data_raw', 'data_sanitized_md')
-    raw_id_fields = ('user', 'word_embedding')
-
-@admin.register(NodeTopic)
-class NodeTopicAdmin(admin.ModelAdmin):
-    list_display = ('title', 'user', 'created_at', 'updated_at', 'disabled', 'language')
-    list_filter = ('disabled', 'language', 'created_at', 'updated_at')
-    search_fields = ('title',)
-    raw_id_fields = ('user', 'word_embedding')
-
-@admin.register(WordEmbedding)
-class WordEmbeddingAdmin(admin.ModelAdmin):
-    list_display = ('id', 'model')
-    search_fields = ('model',)
-
+# Edge Admin
 @admin.register(Edge)
 class EdgeAdmin(admin.ModelAdmin):
-    list_display = ('get_from_node', 'get_to_node', 'similarity')
-    list_filter = ('from_content_type', 'to_content_type')
-    search_fields = ('get_from_node', 'get_to_node')
+    list_display = ('project', 'uuid', 'get_from_node', 'get_to_node', 'similarity')
+    search_fields = ('project__title', 'similarity')
+    list_filter = ('project',)
 
     def get_from_node(self, obj):
-        return obj.from_node
+        return str(obj.from_node)
     get_from_node.short_description = 'From Node'
 
     def get_to_node(self, obj):
-        return obj.to_node
+        return str(obj.to_node)
     get_to_node.short_description = 'To Node'
+
+# NodeEmbedding Admin
+@admin.register(NodeEmbedding)
+class NodeEmbeddingAdmin(admin.ModelAdmin):
+    list_display = ('project', 'embedding_model', 'id')
+    search_fields = ('embedding_model',)
+    list_filter = ('project',)
+
+# WordEmbedding Admin
+@admin.register(WordEmbedding)
+class WordEmbeddingAdmin(admin.ModelAdmin):
+    list_display = ('project', 'embedding_model', 'id')
+    search_fields = ('embedding_model',)
+    list_filter = ('project',)
+
+# NodeNote Admin
+@admin.register(NodeNote)
+class NodeNoteAdmin(admin.ModelAdmin):
+    list_display = ('title', 'short_summary', 'data_type', 'created_at', 'updated_at')
+    search_fields = ('title', 'short_summary')
+    list_filter = ('data_type', 'created_at', 'updated_at')
+
+# NodeTopic Admin
+@admin.register(NodeTopic)
+class NodeTopicAdmin(admin.ModelAdmin):
+    list_display = ('title', 'data_type', 'language', 'disabled', 'created_at', 'updated_at')
+    search_fields = ('title', 'data_type')
+    list_filter = ('data_type', 'language', 'disabled')
+
+# User Admin (Custom UserAdmin)
+@admin.register(User)
+class CustomUserAdmin(UserAdmin):
+    pass

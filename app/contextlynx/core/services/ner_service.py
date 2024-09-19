@@ -1,5 +1,6 @@
 import spacy
-from ..models import NodeTopicDataType
+from ..models import NodeTopicType
+
 
 class NERService:
     _instance = None
@@ -22,10 +23,11 @@ class NERService:
         for ent in doc.ents:
             data_type = NERService._map_entity(ent.label_)
             text = ent.text
-            entities.append({
-                'title': text,
-                'data_type': data_type,
-            })
+            if data_type:  # Only add entities that are not in the ignored categories
+                entities.append({
+                    'title': text,
+                    'data_type': data_type,
+                })
 
         # Step 2: Add existing topics to the entities list
         if existing_topics:
@@ -61,23 +63,30 @@ class NERService:
     def _map_entity(ent_type):
         """Map spaCy entity types to NodeTopicDataType"""
         mapping = {
-            "PERSON": NodeTopicDataType.PERSON,
-            "ORG": NodeTopicDataType.ORGANIZATION,
-            "GPE": NodeTopicDataType.LOCATION,
-            "LOC": NodeTopicDataType.LOCATION,
-            "DATE": NodeTopicDataType.DATE,
-            "EVENT": NodeTopicDataType.EVENT,
-            "PRODUCT": NodeTopicDataType.PRODUCT,
-            "WORK_OF_ART": NodeTopicDataType.WORK_OF_ART,
-            "LAW": NodeTopicDataType.LAW,
-            "LANGUAGE": NodeTopicDataType.LANGUAGE,
-            "QUANTITY": NodeTopicDataType.QUANTITY,
-            "PERCENT": NodeTopicDataType.PERCENT,
-            "MONEY": NodeTopicDataType.MONEY,
-            "TIME": NodeTopicDataType.TIME,
-            "NORP": NodeTopicDataType.NATIONALITY,  # Nationalities, religious or political groups
-            "FAC": NodeTopicDataType.ORGANIZATION,  # Buildings, airports, highways, bridges, etc.
-            "CARDINAL": NodeTopicDataType.QUANTITY,
-            #"ORDINAL": NodeTopicDataType.QUANTITY,
+            "PERSON": NodeTopicType.PERSON,
+            "ORG": NodeTopicType.ORGANIZATION,
+            "GPE": NodeTopicType.LOCATION,
+            "LOC": NodeTopicType.LOCATION,
+            "DATE": NodeTopicType.DATE,
+            "EVENT": NodeTopicType.EVENT,
+            "PRODUCT": NodeTopicType.PRODUCT,
+            "WORK_OF_ART": NodeTopicType.WORK_OF_ART,
+            "LAW": NodeTopicType.LAW,
+            "LANGUAGE": NodeTopicType.LANGUAGE,
+            "QUANTITY": NodeTopicType.QUANTITY,
+            "PERCENT": NodeTopicType.PERCENT,
+            "MONEY": NodeTopicType.MONEY,
+            "TIME": NodeTopicType.TIME,
+            "NORP": NodeTopicType.NATIONALITY,  # Nationalities, religious or political groups
+            "FAC": NodeTopicType.ORGANIZATION,  # Buildings, airports, highways, bridges, etc.
         }
-        return mapping.get(ent_type, NodeTopicDataType.OTHER)
+
+        ignored_categories = {
+            "CARDINAL": NodeTopicType.QUANTITY,
+            "ORDINAL": NodeTopicType.QUANTITY,
+        }
+
+        if ent_type in ignored_categories:
+            return None  # Skip entities in ignored categories
+
+        return mapping.get(ent_type, NodeTopicType.OTHER)

@@ -1,13 +1,19 @@
 from django.db import models
-from .user import User
-from .word_embedding import WordEmbedding
+from django.utils.decorators import classonlymethod
+
+from . import Project
+from .embedding_node import NodeEmbedding
+from .embedding_word import WordEmbedding
+import uuid
 
 class Node(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     language = models.CharField(max_length=10)
-    word_embedding = models.ForeignKey(WordEmbedding, on_delete=models.SET_NULL, null=True)
+    node_embedding = models.ForeignKey(NodeEmbedding, on_delete=models.SET_NULL, null=True, related_name='nodes_node_embedding')
+    word_embedding = models.ForeignKey(WordEmbedding, on_delete=models.SET_NULL, null=True, related_name='nodes_word_embedding')
 
     class Meta:
         abstract = True
@@ -21,8 +27,16 @@ class Node(models.Model):
     def edge_count(self):
         raise NotImplementedError("Subclasses must implement this method.")
 
+    @classonlymethod
+    def for_word_embedding(cls, word_embedding_id):
+        raise NotImplementedError("Subclasses must implement this method.")
+
+    @classonlymethod
+    def for_node_embedding(cls, word_embedding_id):
+        raise NotImplementedError("Subclasses must implement this method.")
+
     @staticmethod
-    def all_edges_for_user(user):
+    def all_edges_for_project(user):
         raise NotImplementedError("Subclasses must implement this method.")
 
     def __str__(self):
