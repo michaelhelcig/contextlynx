@@ -10,6 +10,7 @@ class Project(models.Model):
     icon = models.CharField(max_length=16, null=True)
     title = models.CharField(max_length=255)
     description = models.TextField(null=True)
+    latest_node_embedding_calculated = models.BooleanField(default=False)
 
 
     @staticmethod

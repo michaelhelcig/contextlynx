@@ -27,17 +27,27 @@ class TopicService:
             return topic
 
     def ensure_topic(self, project, title, language, data_type=NodeTopicType.OTHER):
+        topic = self.search_topic(project, title, language, data_type)
+
+        if not topic:
+            topic = self.create_topic(project, title, language, data_type)
+
+        return topic
+
+
+    def search_topic(self, project, title, language, data_type=NodeTopicType.OTHER):
         topic = NodeTopic.objects.filter(project=project, title=title, data_type=data_type).first()
 
         if not topic:
             embedding = self.word_embedding_service.create_word_embedding(title)
 
-            embedding_similarity_map = WordEmbedding.get_similar_embeddings(project, embedding.embedding_vector, threshold=0.99)
+            embedding_similarity_map = WordEmbedding.get_similar_embeddings(project, embedding.embedding_vector,
+                                                                            threshold=0.99)
             if embedding_similarity_map:
                 embedding_similarity = embedding_similarity_map[0]
                 topic = NodeTopic.for_word_embedding(embedding_similarity[0])
             else:
-                topic = self.create_topic(project, title, language, data_type)
+                topic = None
 
         return topic
 

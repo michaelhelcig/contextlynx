@@ -1,9 +1,8 @@
-from django.templatetags.i18n import language
-from openai import project
-
 from .web_scrapter_service import WebScraperService
 from ..models import NodeNote, Project, NodeTopic, Edge
 from .word_embedding_service import WordEmbeddingService
+from .node_embedding_service import NodeEmbeddingService
+from .background_worker_service import BackgroundWorkerService
 from .topic_service import TopicService
 from .nlp_service import NlpService
 from ..models.node_note import NoteDataType
@@ -16,6 +15,8 @@ class NoteService:
     def __init__(self):
         self.nlp_service = NlpService()
         self.word_embedding_service = WordEmbeddingService()
+        self.node_embedding_service = NodeEmbeddingService()
+        self.background_worker_service = BackgroundWorkerService()
         self.topic_service = TopicService()
         self.web_scraper_service = WebScraperService()
         pass
@@ -53,6 +54,9 @@ class NoteService:
                 data_type=data_type
             )
 
+            project.latest_node_embedding_calculated = False
+            project.save()
+
             topics = set()
             topics_json = self.nlp_service.ner().get_named_entities(data_sanitized_md, topics_json)
 
@@ -70,8 +74,9 @@ class NoteService:
             #all_topics = NodeTopic.objects.filter(project=project)
             #self.topic_service.ensure_edges_with_similarity(all_topics, 0.85)
 
-            return note
+        self.background_worker_service.recalculate_node_embeddings(project)
 
+        return note
 
     def constitute_data_raw(self, data_input):
         data_input = data_input.strip()

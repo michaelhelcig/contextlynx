@@ -74,8 +74,6 @@ class NERService:
             "LAW": NodeTopicType.LAW,
             "LANGUAGE": NodeTopicType.LANGUAGE,
             "QUANTITY": NodeTopicType.QUANTITY,
-            "PERCENT": NodeTopicType.PERCENT,
-            "MONEY": NodeTopicType.MONEY,
             "TIME": NodeTopicType.TIME,
             "NORP": NodeTopicType.NATIONALITY,  # Nationalities, religious or political groups
             "FAC": NodeTopicType.ORGANIZATION,  # Buildings, airports, highways, bridges, etc.
@@ -84,6 +82,8 @@ class NERService:
         ignored_categories = {
             "CARDINAL": NodeTopicType.QUANTITY,
             "ORDINAL": NodeTopicType.QUANTITY,
+            "PERCENT": None,
+            "MONEY": None,
         }
 
         if ent_type in ignored_categories:
