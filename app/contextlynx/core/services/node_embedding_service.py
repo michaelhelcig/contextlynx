@@ -48,21 +48,19 @@ class NodeEmbeddingService:
             project.save()
 
     def _update_node_embedding(self, node, embedding_vector):
-        # Get existing embedding or create a new one
-        embedding = node.node_embedding
 
-        if embedding is not None:
-            # Update existing embedding
-            embedding.embedding_model = self.embedding_model
-            embedding.embedding_vector = embedding_vector
-            embedding.save()
-        else:
-            # Create new embedding
-            embedding = NodeEmbedding.objects.create(
-                project=node.project,
-                embedding_model=self.embedding_model,
-                embedding_vector=embedding_vector
-            )
+        try:
+            if node.node_embedding is not None:
+                node.node_embedding.delete()
+        except:
+            pass
+
+        # Create new embedding
+        embedding = NodeEmbedding.objects.create(
+            project=node.project,
+            embedding_model=self.embedding_model,
+            embedding_vector=embedding_vector
+        )
 
         # Assign and save the node with the updated embedding
         node.node_embedding = embedding

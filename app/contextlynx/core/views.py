@@ -3,9 +3,6 @@ from django.views.generic import TemplateView
 from django.views.generic import ListView
 from django.utils.safestring import mark_safe
 import json
-
-from openai import project
-
 from .models import NodeTopic, NodeNote, Edge, Project
 
 

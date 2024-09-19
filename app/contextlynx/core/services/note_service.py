@@ -74,7 +74,7 @@ class NoteService:
             #all_topics = NodeTopic.objects.filter(project=project)
             #self.topic_service.ensure_edges_with_similarity(all_topics, 0.85)
 
-        self.background_worker_service.recalculate_node_embeddings(project)
+        self.background_worker_service.recalculate_node_embeddings_if_necessary(project)
 
         return note
 

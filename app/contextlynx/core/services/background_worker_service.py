@@ -13,6 +13,7 @@ class BackgroundWorkerService:
     def _initialize(self):
         self.node_embedding_service = NodeEmbeddingService()
 
-    def recalculate_node_embeddings(self, project):
-        thread = Thread(target=self.node_embedding_service.recalculate_node_embeddings, args=(project,))
-        thread.start()
+    def recalculate_node_embeddings_if_necessary(self, project):
+        if not project.latest_node_embedding_calculated:
+            thread = Thread(target=self.node_embedding_service.recalculate_node_embeddings, args=(project,))
+            thread.start()

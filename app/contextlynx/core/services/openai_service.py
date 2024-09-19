@@ -53,6 +53,5 @@ class OpenAiService:
 
         if settings.DEBUG:
             print("Response: ", response_text)
-            print("Results: ", results)
 
         return results
