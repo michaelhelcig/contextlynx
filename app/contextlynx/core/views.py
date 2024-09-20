@@ -31,10 +31,31 @@ class GraphView(TemplateView):
         links = []
 
         colors = {
-            "PERSON": "#FFB74D",
-            "ORGANIZATION": "#FFB3BA",
-            "LOCATION": "#C5E1A5",
-            "OTHER": "#B3E5FC"
+            "PERSON": "#FF6F61",  # Coral
+            "ORGANIZATION": "#6D8B74",  # Sage Green
+            "LOCATION": "#6C5B7B",  # Deep Lavender
+            "OTHER": "#F8B400",  # Vibrant Amber
+            "CONCEPT": "#CE93D8",  # Light Lavender
+            "DATE": "#FF8C00",  # Dark Orange
+            "EVENT": "#4CAF50",  # Medium Green
+            "PRODUCT": "#FF5722",  # Deep Orange
+            "WORK_OF_ART": "#AB47BC",  # Light Purple
+            "LAW": "#E91E63",  # Pink
+            "LANGUAGE": "#2196F3",  # Blue
+            "QUANTITY": "#FFC107",  # Amber
+            "TIME": "#00BCD4",  # Light Blue
+            "URL": "#8E24AA",  # Purple
+            "EMAIL": "#FF9800",  # Orange
+            "PHONE_NUMBER": "#03A9F4",  # Light Blue
+            "NATIONALITY": "#E64A19",  # Red-Orange
+            "RELIGION": "#9E9D24",  # Olive Green
+            "VEHICLE": "#00BFAE",  # Teal
+            "ANIMAL": "#4CAF50",  # Green
+            "PLANT": "#8BC34A",  # Lime Green
+            "MEDICAL_CONDITION": "#F44336",  # Red
+            "SPORTS_TEAM": "#03A9F4",  # Light Blue
+            "INDUSTRY": "#FFC107",  # Amber
+            "COMPANY": "#FF5722"  # Deep Orange
         }
 
         # Add NodeTopics
