@@ -36,7 +36,6 @@ class NodeTopicType(models.TextChoices):
 
 
 class NodeTopic(Node):
-    disabled = models.BooleanField(default=False)
     title = models.CharField(max_length=512)
     data_type = models.CharField(max_length=20, choices=NodeTopicType.choices, default=NodeTopicType.OTHER)
     language = models.CharField(max_length=10)
@@ -88,6 +87,10 @@ class NodeTopic(Node):
             from_content_type=self.get_content_type(),
             from_object_id=self.id
         ).count()
+
+    @classmethod
+    def count(cls, project):
+        return cls.objects.filter(project=project).count()
 
     @classmethod
     def get_by_ids(cls, node_ids):

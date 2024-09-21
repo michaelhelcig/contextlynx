@@ -4,6 +4,7 @@ from django.views.generic import ListView
 from django.utils.safestring import mark_safe
 import json
 from .models import NodeTopic, NodeNote, Edge, Project
+from .services.background_worker_service import BackgroundWorkerService
 
 
 def error_404(request, exception=None):
@@ -26,6 +27,8 @@ class GraphView(TemplateView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         project = Project.get_or_create_default_project(user)
+
+        BackgroundWorkerService().recalculate_node_embeddings_if_necessary(project)
 
         nodes = []
         links = []
@@ -60,31 +63,35 @@ class GraphView(TemplateView):
 
         # Add NodeTopics
         for topic in NodeTopic.objects.filter(project=project):
-            nodes.append({
-                "id": f"topic_{topic.id}",
-                "title": topic.title,
-                "type": "NodeTopic",
-                "color": colors[topic.data_type] if topic.data_type in colors else colors["OTHER"],
-                "edgeCount": topic.edge_count()
-            })
+            if not topic.disabled:
+                nodes.append({
+                    "id": f"topic_{topic.id}",
+                    "title": topic.title,
+                    "type": "NodeTopic",
+                    "color": colors[topic.data_type] if topic.data_type in colors else colors["OTHER"],
+                    "edgeCount": topic.edge_count()
+                })
 
         # Add NodeNotes
         for note in NodeNote.objects.filter(project=project):
-            nodes.append({
-                "id": f"note_{note.id}",
-                "title": note.title,
-                "color": "lightgrey",
-                "type": "NodeNote"
-            })
+            if not note.disabled:
+                nodes.append({
+                    "id": f"note_{note.id}",
+                    "title": note.title,
+                    "color": "lightgrey",
+                    "type": "NodeNote"
+                })
 
         # Add edges
         edges = set(Edge.objects.filter(project=project))
         for edge in edges:
-            links.append({
-                "source": f"{'topic' if isinstance(edge.from_node, NodeTopic) else 'note'}_{edge.from_node.id}",
-                "target": f"{'topic' if isinstance(edge.to_node, NodeTopic) else 'note'}_{edge.to_node.id}",
-                "similarity": edge.similarity
-            })
+            if not edge.from_node.disabled and not edge.to_node.disabled:
+                links.append({
+                    "source": f"{'topic' if isinstance(edge.from_node, NodeTopic) else 'note'}_{edge.from_node.id}",
+                    "target": f"{'topic' if isinstance(edge.to_node, NodeTopic) else 'note'}_{edge.to_node.id}",
+                    "similarity": edge.similarity,
+                    "color": 'red' if edge.predicted else 'black'
+                })
 
         graph_data = {
             "nodes": nodes,

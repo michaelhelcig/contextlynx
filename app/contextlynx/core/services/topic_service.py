@@ -125,11 +125,5 @@ class TopicService:
 
     @staticmethod
     def ensure_edge_for_topic_pair(topic1, topic2):
-        if not topic1.has_edge_to(topic2) and not topic2.has_edge_to(topic1):
-            similarity = WordEmbeddingService.get_cosine_similarity(topic1.word_embedding.embedding_vector, topic2.word_embedding.embedding_vector)
-            Edge.objects.create(
-                project=topic1.project,
-                from_node=topic1,
-                to_node=topic2,
-                similarity=similarity
-            )
+        similarity = WordEmbeddingService.get_cosine_similarity(topic1.word_embedding.embedding_vector, topic2.word_embedding.embedding_vector)
+        Edge.ensure_edge(topic1, topic2, False, similarity)

@@ -13,7 +13,7 @@ class ProjectAdmin(admin.ModelAdmin):
 # Edge Admin
 @admin.register(Edge)
 class EdgeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'project', 'uuid', 'get_from_node', 'get_to_node', 'similarity')
+    list_display = ('id', 'get_from_node', 'get_to_node', 'similarity', 'predicted', 'project', 'uuid')
     search_fields = ('project__title', 'similarity')
     list_filter = ('project',)
 

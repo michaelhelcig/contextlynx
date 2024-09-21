@@ -36,7 +36,7 @@ class NoteService:
 
             existing_topics = set(existing_topics_largest + existing_topics_similar)
 
-            data_raw, data_type = self.constitute_data_raw(data_input)
+            data_raw, data_type = self._constitute_data_raw(data_input)
 
             data_json = self.nlp_service.generate_topics_and_summary(data_raw, existing_topics)
             topics_json = data_json.get('topics')
@@ -70,8 +70,6 @@ class NoteService:
             topics = set()
             topics_json = self.nlp_service.ner().get_named_entities(data_sanitized_md, topics_json)
 
-            print(f"topics_json: {topics_json}")
-
             for topic_json in topics_json:
                 topic_title = topic_json.get('title')
                 topic_data_type = topic_json.get('data_type')
@@ -85,14 +83,15 @@ class NoteService:
 
             self.topic_service.ensure_edges_for_topics(topics)
 
-            #all_topics = NodeTopic.objects.filter(project=project)
-            #self.topic_service.ensure_edges_with_similarity(all_topics, 0.85)
-
         self.background_worker_service.recalculate_node_embeddings_if_necessary(project)
 
         return note
 
-    def constitute_data_raw(self, data_input):
+    def related_notes(self, note, similarity, limit, predicted=False):
+        pass
+
+
+    def _constitute_data_raw(self, data_input):
         data_input = data_input.strip()
         data_raw = data_input
 
@@ -125,12 +124,7 @@ class NoteService:
     def _create_edge_for_topic(project, note, topic):
         similarity = WordEmbeddingService.get_cosine_similarity(note.word_embedding.embedding_vector, topic.word_embedding.embedding_vector)
 
-        edge = Edge.objects.create(
-            project=project,
-            from_node=note,
-            to_node=topic,
-            similarity=similarity
-        )
+        edge = Edge.ensure_edge(note, topic, False, similarity)
 
         return edge
 

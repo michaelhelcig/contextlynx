@@ -68,7 +68,7 @@ class NodeNote(Node):
         ).count()
 
 
-    def related_topics(self, depth = 1):
+    def related_topics(self, predicted=False):
         """
         Get all related topics for this note.
         """
@@ -76,13 +76,18 @@ class NodeNote(Node):
         edges = Edge.objects.filter(
             from_content_type=self.get_content_type(),
             from_object_id=self.id,
-            to_content_type=ContentType.objects.get_for_model(NodeTopic)
+            to_content_type=ContentType.objects.get_for_model(NodeTopic),
+            predicted=predicted
         )
 
         # Get all topics from these edges
         topics = [edge.to_node for edge in edges]
 
         return topics
+
+    @classmethod
+    def count(cls, project):
+        return cls.objects.filter(project=project).count()
 
     @classmethod
     def for_word_embedding(cls, word_embedding_id):

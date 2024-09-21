@@ -44,16 +44,17 @@ window.renderKnowledgeGraph = function(data) {
         .force("center", d3.forceCenter(width / 2, height / 2))
         .force("collision", d3.forceCollide().radius(d => d.radius + 15));
 
-    // Color scale for edges based on similarity
-    const colorScale = d3.scaleLinear()
-        .domain([0, 1])
-        .range(["white", "black"]);
+    const gradientToColor = (targetColor) => {
+        return d3.scaleLinear()
+            .domain([0, 1])
+            .range(["white", targetColor]);
+    };
 
     const link = g.append("g")
         .selectAll("line")
         .data(data.links)
         .join("line")
-        .attr("stroke", d => colorScale(d.similarity))
+        .attr("stroke", d => gradientToColor(d.color)(d.similarity))
         .attr("stroke-opacity", 0.8)
         .attr("stroke-width", 2);
 

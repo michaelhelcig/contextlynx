@@ -8,6 +8,7 @@ import uuid
 
 class Node(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    disabled = models.BooleanField(default=False)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -28,6 +29,10 @@ class Node(models.Model):
         raise NotImplementedError("Subclasses must implement this method.")
 
     def edge_count(self):
+        raise NotImplementedError("Subclasses must implement this method.")
+
+    @classonlymethod
+    def count(cls, project):
         raise NotImplementedError("Subclasses must implement this method.")
 
     @classonlymethod

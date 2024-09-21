@@ -21,7 +21,36 @@ class Edge(models.Model):
     to_object_id = models.PositiveIntegerField()
     to_node = GenericForeignKey('to_content_type', 'to_object_id')
 
-    similarity = models.FloatField()
+    similarity = models.FloatField(null=True)
+
+    @classmethod
+    def ensure_edge(cls, node1, node2, predicted=False, similarity=None):
+        # Check if an edge exists in either direction
+        edge = None
+
+        if node1.has_edge_to(node2):
+            edge = node1.edge_to(node2)  # Get the edge from node1 to node2
+        elif node2.has_edge_to(node1):
+            edge = node2.edge_to(node1)  # Get the edge from node2 to node1
+
+        if edge:
+            # If an edge exists, update it
+
+            # ensure the edge is not accidentally set to predicted
+            if edge.predicted:
+                edge.predicted = predicted
+
+            edge.similarity = similarity
+            edge.save()
+        else:
+            # If no edge exists, create a new one
+            Edge.objects.create(
+                project=node1.project,
+                from_node=node1,
+                to_node=node2,
+                predicted=predicted,
+                similarity=similarity
+            )
 
     @staticmethod
     def get_for_nodes(nodes):
