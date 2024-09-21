@@ -1,7 +1,7 @@
 {% load static %}
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -36,20 +36,10 @@
         }
     </style>
 </head>
-<body class="bg-gray-100 pt-24">
+<body class="h-full">
     <nav class="floating-header">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
             <a href="/" class="text-blue-600 text-2xl font-bold">ContextLynx</a>
-            <!-- Search bar 
-            <form action="{% url 'notes' %}" method="get" class="flex-grow mx-4">
-                <div class="relative max-w-lg mx-auto">
-                    <input type="text" name="q" placeholder="Search..." class="search-bar w-full pl-10 pr-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="search-input">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                </div>
-            </form>
-            -->
             <div class="flex items-center space-x-3">
                 <a href="{% url 'create_note' %}" class="text-gray-700 hover:text-blue-600 text-2xl mx-1">✍️</a>
                 <a href="{% url 'notes' %}" class="text-gray-700 hover:text-blue-600 text-2xl mx-1 border-l border-gray-200 pl-3">📒</a>
@@ -57,9 +47,7 @@
             </div>
         </div>
     </nav>
-    <div class="container mx-auto mt-8 px-4">
-        {% block content %}{% endblock %}
-    </div>
+    {% block content %}{% endblock %}
 
     <script>
         document.addEventListener('keydown', function(e) {

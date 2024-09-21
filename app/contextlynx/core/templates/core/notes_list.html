@@ -3,7 +3,7 @@
 {% load markdown_extras %}
 
 {% block content %}
-<div class="bg-white p-6 rounded-lg shadow-md">
+<div class="floating-content bg-white p-6 rounded-lg shadow-md">
     <h2 class="text-2xl font-bold mb-4">📒 Notes</h2>
     <ul>
         {% for note in notes %}
@@ -51,7 +51,6 @@
                         <li>No related topics found.</li>
                         {% endfor %}
                     </ul>
-
                 </div>
             </div>
         </li>
@@ -96,6 +95,23 @@ function showContent(button, view) {
 </script>
 
 <style>
+/* Floating content styles */
+.floating-content {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 1200px;
+    max-height: 90vh;
+    overflow-y: auto;
+    background-color: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 900;
+}
+
 /* Custom badge styles based on note type */
 .text-badge {
     background-color: #1f2937; /* Darker, modern blue */
@@ -200,13 +216,13 @@ pre {
 }
 
 /* Ensure the note content takes up the full width of its container */
-.w-[90%] {
-    width: 90%;
+.w-[95%] {
+    width: 95%;
 }
 
-/* Ensure the icon container takes up 10% of the width */
-.w-[10%] {
-    width: 10%;
+/* Ensure the icon container takes up 5% of the width */
+.w-[5%] {
+    width: 5%;
 }
 </style>
 
