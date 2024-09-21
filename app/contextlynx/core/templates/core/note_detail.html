@@ -1,35 +1,47 @@
 {% load markdown_extras %}
 
-<div class="w-full h-full p-4 bg-white rounded-lg shadow-md">
-    <div class="picker-container mb-4">
+<div class="w-full h-full p-4 bg-white rounded-lg shadow-md flex flex-col justify-between">
+    <!-- Picker Section (Centered Top) -->
+    <div class="picker-container mb-4 flex justify-center">
         <button class="picker-option active" onclick="showContent(this, 'short')">Short</button>
         <button class="picker-option" onclick="showContent(this, 'full')">Full</button>
         <button class="picker-option" onclick="showContent(this, 'original')">Original</button>
         <button class="picker-option" onclick="showContent(this, 'input')">Input</button>
     </div>
 
-    <h2 class="text-2xl font-bold mb-2">
-        <span class="text-3xl mr-2">{{ note.icon }}</span>
-        {{ note.title }}
-    </h2>
-    <p class="text-gray-500 mb-4">{{ note.created_at|date:"F j, Y, g:i a" }}</p>
+    <!-- Note Content Section -->
+    <div>
+        <h2 class="text-2xl font-bold mb-2">
+            <span class="text-3xl mr-2">{{ note.icon }}</span>
+            {{ note.title }}
+        </h2>
+        <p class="text-gray-500 mb-4">{{ note.created_at|date:"F j, Y, g:i a" }}</p>
 
-    <div id="note-content-short" class="note-content">
-        {{ note.short_summary }}...
-    </div>
-    <div id="note-content-full" class="note-content hidden">
-        {{ note.data_sanitized_md|markdown_to_html|safe }}
-    </div>
-    <div id="note-content-original" class="note-content hidden">
-        <pre class="bg-gray-100 p-4 rounded overflow-x-auto break-all whitespace-pre-wrap">{{ note.data_raw }}</pre>
-    </div>
-    <div id="note-content-input" class="note-content hidden">
-        <pre class="bg-gray-100 p-4 rounded overflow-x-auto break-all whitespace-pre-wrap">{{ note.data_input }}</pre>
+        <!-- Short View (Default shown) -->
+        <div id="note-detail-content-short" class="note-detail-content">
+            {{ note.short_summary }}...
+        </div>
+        
+        <!-- Full View (Hidden by default) -->
+        <div id="note-detail-content-full" class="note-detail-content hidden">
+            {{ note.data_sanitized_md|markdown_to_html|safe }}
+        </div>
+
+        <!-- Original View (Hidden by default) -->
+        <div id="note-detail-content-original" class="note-detail-content hidden">
+            <pre class="bg-gray-100 p-4 rounded overflow-x-auto break-all whitespace-pre-wrap">{{ note.data_raw }}</pre>
+        </div>
+        
+        <!-- Input View (Hidden by default) -->
+        <div id="note-detail-content-input" class="note-detail-content hidden">
+            <pre class="bg-gray-100 p-4 rounded overflow-x-auto break-all whitespace-pre-wrap">{{ note.data_input }}</pre>
+        </div>
     </div>
 
+    <!-- Related Topics Aligned at the Bottom -->
     <div class="mt-4">
         <h3 class="text-lg font-semibold mb-2">Related Topics:</h3>
-        <ul class="text-gray-600">
+        <ul class="text-gray-600 flex flex-wrap">
             {% for topic in note.related_topics %}
             <li class="inline-block mr-2 mb-2 px-2 py-1 bg-gray-200 rounded">{{ topic.title }}</li>
             {% empty %}
@@ -39,15 +51,16 @@
     </div>
 </div>
 
+<!-- JavaScript Condition Remain Unchanged -->
 <script>
 function showContent(button, view) {
     const noteContent = button.closest('.w-full');
     
     // Hide all content views
-    noteContent.querySelectorAll('.note-content').forEach(el => el.classList.add('hidden'));
+    noteContent.querySelectorAll('.note-detail-content').forEach(el => el.classList.add('hidden'));
     
     // Show selected content
-    noteContent.querySelector(`#note-content-${view}`).classList.remove('hidden');
+    noteContent.querySelector(`#note-detail-content-${view}`).classList.remove('hidden');
     
     // Update active button state
     noteContent.querySelectorAll('.picker-option').forEach(btn => btn.classList.remove('active'));

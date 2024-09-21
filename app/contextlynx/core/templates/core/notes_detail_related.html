@@ -2,15 +2,16 @@
 {% load markdown_extras %}
 
 {% block content %}
-<div class="flex mx-auto mt-32 w-11/12 max-w-7xl">
+<div class="flex mx-auto w-11/12 max-w-7xl" style="height: calc(100vh - 5rem); margin-top: 7rem;">
+    {% if current_note %}
     <!-- Left side: Current note detail -->
-    <div class="w-1/2 pr-4">
+    <div class="w-1/2 pr-4 h-full overflow-y-auto">
         {% include 'core/note_detail.html' with note=current_note %}
     </div>
 
     <!-- Right side: Related notes list -->
-    <div class="w-1/2 pl-4">
-        <div class="bg-white rounded-lg shadow-md p-6">
+    <div class="w-1/2 pl-4 h-full">
+        <div class="bg-white rounded-lg shadow-md p-6 h-full overflow-y-auto">
             <h2 class="text-2xl font-bold mb-4">Related Notes</h2>
             <ul>
                 {% for note in related_notes %}
@@ -21,5 +22,14 @@
             </ul>
         </div>
     </div>
+    {% else %}
+    <!-- Display sad cat emoji and message if no current note is available -->
+    <div class="flex justify-center items-center w-full h-full">
+        <div class="text-center">
+            <p class="text-6xl">😿</p>
+            <p class="text-2xl mt-4 text-gray-700">Wow such empty, you should add some notes...</p>
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

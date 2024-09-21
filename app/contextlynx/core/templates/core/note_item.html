@@ -1,10 +1,13 @@
 {% load markdown_extras %}
 
 <li class="note-item relative mb-6 border border-gray-200 rounded-lg flex" data-index="{{ counter }}">
-    <a href="{% url 'notes_detail_related' note.pk %}" class="flex w-full">
+    <div class="flex w-full">
         <!-- Note Icon (10% width) -->
         <div class="flex items-center justify-center w-[10%] bg-gray-50 rounded-l-lg">
-            <span class="text-2xl">{{ note.icon }}</span>
+            <!-- Make icon clickable -->
+            <a href="{% url 'notes_detail_related' note.uuid %}">
+                <span class="text-2xl">{{ note.icon }}</span>
+            </a>
         </div>
 
         <!-- Note Content (90% width) -->
@@ -19,7 +22,10 @@
 
             <!-- Title and Date -->
             <h3 class="text-xl font-bold mb-2">
-                {{ note.title }}
+                <!-- Make title clickable -->
+                <a href="{% url 'notes_detail_related' note.uuid %}" class="hover:underline">
+                    {{ note.title }}
+                </a>
                 <span class="text-gray-400 text-sm ml-4">{{ note.created_at|date:"F j, Y, g:i a" }}</span>
             </h3>
 
@@ -52,7 +58,7 @@
                 </ul>
             </div>
         </div>
-    </a>
+    </div>
 
     <script>
     function showContent(button, view) {

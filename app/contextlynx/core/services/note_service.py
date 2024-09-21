@@ -28,8 +28,8 @@ class NoteService:
         with transaction.atomic():
             project = Project.get_or_create_default_project(user)
 
-            existing_topics_largest = self.topic_service.get_n_largest_topics(project, 20)
-            existing_topics_similar = self.topic_service.search_topics_word_embedding(project, data_input, True, 0, 10)
+            existing_topics_largest = self.topic_service.get_n_largest_topics(project, 10)
+            existing_topics_similar = self.topic_service.search_topics_word_embedding(project, data_input, True, 0, 20)
 
             print(f"existing_topics_largest: {existing_topics_largest}")
             print(f"existing_topics_similar: {existing_topics_similar}")
@@ -114,6 +114,8 @@ class NoteService:
                 embedding_ids = [tupel[0] for tupel in embedding_similarity_tupels]
                 related_notes = NodeNote.for_node_embeddings(embedding_ids)
 
+
+        related_notes = [n for n in related_notes if n.id != note.id]
         return related_notes
 
     def _constitute_data_raw(self, data_input):

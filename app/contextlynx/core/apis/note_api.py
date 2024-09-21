@@ -25,7 +25,8 @@ def note(request):
 
         # Add success message
         messages.success(request, 'Note saved successfully!')
-        return redirect(reverse('notes_detail_related', kwargs={'pk': new_note.id}))  # Redirect to the newly created note's detail
+        # Redirect to the detail view of the newly created note
+        return redirect(reverse('notes_detail_related', kwargs={'slug': new_note.uuid}))
 
     except Exception as e:
         # Capture and print the stack trace

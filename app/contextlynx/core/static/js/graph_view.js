@@ -62,7 +62,16 @@ window.renderKnowledgeGraph = function(data) {
         .selectAll("g")
         .data(data.nodes)
         .join("g")
+        // Attach drag functionality
         .call(drag(simulation));
+
+    // Add event listener for click on NodeNote type
+    node.on("click", (event, d) => {
+        if (d.type === "NodeNote") {
+            const url = `/notes/${d.uuid}/related`;
+            window.location.href = url;
+        }
+    });
 
     function calculateRadius(d) {
         const baseRadius = d.type === "NodeTopic" ? 40 + 2 * d.edgeCount : 30;

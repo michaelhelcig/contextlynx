@@ -3,9 +3,6 @@ from django.views.generic import TemplateView
 from django.views.generic import ListView, DetailView
 from django.utils.safestring import mark_safe
 import json
-
-from openai import project
-
 from .models import NodeTopic, NodeNote, Edge, Project
 from .services import NoteService
 from .services.background_worker_service import BackgroundWorkerService
@@ -24,7 +21,7 @@ class MyNotesView(ListView):
     ordering = ['-created_at']
 
 
-class NoteDetailRelatedView(DetailView):
+class NoteDetailRelatedView(TemplateView):
     model = NodeNote
     template_name = 'core/notes_detail_related.html'
     context_object_name = 'current_note'
@@ -33,16 +30,19 @@ class NoteDetailRelatedView(DetailView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         project = Project.get_or_create_default_project(user)
-        note_id = self.kwargs['pk']
+        note_uuid = self.kwargs.get('slug')
 
-        if note_id is None:
+        if note_uuid is None or note_uuid == 'latest':
             current_note = NodeNote.objects.filter(project=project).order_by('-created_at').first()
         else:
-            current_note = NodeNote.objects.get(id=note_id)
+            current_note = NodeNote.objects.get(uuid=note_uuid)
 
-        related_notes = NoteService().related_notes(current_note, 10)
+        if not current_note is None:
+            related_notes = NoteService().related_notes(current_note, 4)
 
-        context['related_notes'] = related_notes
+            context['current_note'] = current_note
+            context['related_notes'] = related_notes
+
         return context
 
 
@@ -92,7 +92,8 @@ class GraphView(TemplateView):
             if not topic.disabled:
                 nodes.append({
                     "id": f"topic_{topic.id}",
-                    "title": topic.title,
+                    "uuid": f"{topic.uuid}",
+                    "title": f"{topic.title}",
                     "type": "NodeTopic",
                     "color": colors[topic.data_type] if topic.data_type in colors else colors["OTHER"],
                     "edgeCount": topic.edge_count()
@@ -103,7 +104,8 @@ class GraphView(TemplateView):
             if not note.disabled:
                 nodes.append({
                     "id": f"note_{note.id}",
-                    "title": note.title,
+                    "uuid": f"{note.uuid}",
+                    "title": f"{note.title}",
                     "color": "lightgrey",
                     "type": "NodeNote"
                 })

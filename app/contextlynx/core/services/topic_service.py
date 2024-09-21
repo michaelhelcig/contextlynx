@@ -1,4 +1,5 @@
 from django.contrib.contenttypes.models import ContentType
+from openai import project
 from torch.nn.functional import embedding
 
 from .ner_service import NERService
@@ -48,16 +49,24 @@ class TopicService:
     def ensure_edges_for_topics(self, topics):
         # iterate over all topics and check if there is an edge between them
         for i, topic1 in enumerate(topics):
-            topics_searched = self.search_topics_word_embedding(topic1.project, topic1.title, threshold=0.9)
+            topics_searched = self.search_topics_word_embedding(topic1.project, topic1.title, threshold=0.95)
 
             for topic2 in topics_searched:
-                self.ensure_edge_for_topic_pair(topic1, topic2)
+                self.ensure_edge_for_topic_pair(topic1, topic2, True)
 
             for j, topic2 in enumerate(topics):
                 if i != j:
                     self.ensure_edge_for_topic_pair(topic1, topic2)
 
-    def search_topics_word_embedding(self, project, title, ner_split=False, threshold=0.99, limit=10):
+    def search_topics_word_embedding(
+            self,
+            project,
+            title,
+            ner_split=False,
+            threshold=0.99,
+            limit=10,
+            ignored_types=[NodeTopicType.OTHER, NodeTopicType.PERSON]
+    ):
         embedding_similarity_tupels = list()
 
         # split to do further NER
@@ -68,6 +77,9 @@ class TopicService:
             if named_entities:
                 for named_entity in named_entities:
                     ne_title = named_entity['title']
+                    ne_type = named_entity['data_type']
+                    if ne_type in ignored_types:
+                        continue
                     embedding = self.word_embedding_service.create_word_embedding(ne_title)
                     tuples = WordEmbedding.get_n_closest_neighbors(project, embedding.embedding_vector,limit)
                     embedding_similarity_tupels.extend(tuples)
@@ -78,43 +90,48 @@ class TopicService:
         embedding_similarity_tupels.extend(WordEmbedding.get_similar_embeddings(project, embedding.embedding_vector,
                                                                         threshold=threshold))
 
-        # Remove empty tuples and ensure each tuple has at least two elements
-        embedding_similarity_tupels = [tupel for tupel in embedding_similarity_tupels if tupel and len(tupel) > 1]
-        embedding_similarity_tupels = sorted(embedding_similarity_tupels, key=lambda x: x[1], reverse=True)
-
         if embedding_similarity_tupels:
-            topics = list()
+            word_topics = list()
             embeddings = [tupel[0] for tupel in embedding_similarity_tupels]
             for emb in embeddings:
-                if len(topics) >= limit:
-                    break
                 topic = NodeTopic.for_word_embedding(emb)
 
                 if topic:
-                    topics.append(topic)
+                    word_topics.append(topic)
         else:
-            topics = list()
+            word_topics = list()
 
-        return topics
+        return self.get_closest_neighbours(word_topics, limit)
 
-    def get_closest_neighbours(self, topic, limit=10):
+    def get_closest_neighbours(self, topics, limit=10):
+        embedding_similarity_tupels = list()
+        closest_neighbours = list()
         content_type = ContentType.objects.get_for_model(NodeTopic)
-        embedding = topic.word_embedding.embedding_vector
-        embedding_similarity_tupels = NodeEmbedding.get_n_closest_neighbors(topic.project, embedding, content_type=content_type, limit=limit)
+
+        topic_node_ids = NodeTopic.objects.filter(project=project).values_list('id', flat=True)
+
+        for topic in topics:
+            if not topic.node_embedding:
+                closest_neighbours.append(topic)
+                continue
+            embedding = topic.node_embedding.embedding_vector
+            embedding_similarity_tupels.extend(NodeEmbedding.get_n_closest_neighbors(topic.project, embedding, content_type, topic_node_ids, limit))
+
+        embedding_similarity_tupels = self._order_embedding_similarity_tupels(embedding_similarity_tupels)
+
         if embedding_similarity_tupels:
-            topics = list()
             embeddings = [tupel[0] for tupel in embedding_similarity_tupels]
             for emb in embeddings:
-                if len(topics) >= limit:
+                if len(closest_neighbours) >= limit:
                     break
-                topic = NodeTopic.for_word_embedding(emb)
+                topic = NodeTopic.for_node_embedding(emb)
 
                 if topic:
-                    topics.append(topic)
+                    closest_neighbours.append(topic)
         else:
-            topics = list()
+            closest_neighbours = list()
 
-        return topics
+        return closest_neighbours
 
     def get_n_largest_topics(self, project, n):
         tupels = Edge.get_n_largest_nodes(project, ContentType.objects.get_for_model(NodeTopic), n)
@@ -124,6 +141,13 @@ class TopicService:
 
 
     @staticmethod
-    def ensure_edge_for_topic_pair(topic1, topic2):
+    def _order_embedding_similarity_tupels(embedding_similarity_tupels):
+        # Remove empty tuples and ensure each tuple has at least two elements
+        embedding_similarity_tupels = [tupel for tupel in embedding_similarity_tupels if tupel and len(tupel) > 1]
+        embedding_similarity_tupels = sorted(embedding_similarity_tupels, key=lambda x: x[1], reverse=True)
+        return embedding_similarity_tupels
+
+    @staticmethod
+    def ensure_edge_for_topic_pair(topic1, topic2, predicted=False):
         similarity = WordEmbeddingService.get_cosine_similarity(topic1.word_embedding.embedding_vector, topic2.word_embedding.embedding_vector)
-        Edge.ensure_edge(topic1, topic2, False, similarity)
+        Edge.ensure_edge(topic1, topic2, predicted, similarity)

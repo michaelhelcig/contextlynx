@@ -35,7 +35,7 @@ class NodeEmbeddingService:
             nodes = list(note_nodes) + list(topic_nodes)
             for node in nodes:
                 if str(node.id) not in model.wv.index_to_key:
-                    node_embedding = [0] * 96
+                    node_embedding = [0] * 32
                 else:
                     node_embedding = model.wv[str(node.id)]
                 self._update_node_embedding(node, node_embedding)
@@ -54,7 +54,9 @@ class NodeEmbeddingService:
             project.latest_node_embedding_calculated = True
             project.save()
 
-        #self.calculate_predicted_edges(project)
+            print("Node embeddings recalculated")
+
+        # self.calculate_predicted_edges(project)
 
     def calculate_predicted_edges(self, project):
         with transaction.atomic():
@@ -65,7 +67,7 @@ class NodeEmbeddingService:
             nodes = list(note_nodes) + list(topic_nodes)
 
             for node in nodes:
-                similar_nodes = self.predict_edges(project, node, 0.8)
+                similar_nodes = self.predict_edges(project, node, 0.95)
                 for similar_node in similar_nodes:
                     similarity = model.wv.similarity(str(node.id), str(similar_node.id))
                     print(f"Predicted edge between {node.id} and {similar_node.id} with similarity {similarity}")
@@ -89,11 +91,14 @@ class NodeEmbeddingService:
 
     def _get_model(self, project):
         if not (project.latest_node_embedding_calculated and project.id in self.models):
-            edges = Edge.objects.filter(project=project)
+            edges = Edge.objects.filter(project=project).all()
+
+            if len(edges) == 0:
+                return None
 
             g = self._generate_graph(edges)
-            node2vec = Node2Vec(g, dimensions=96, walk_length=30, num_walks=200, workers=4)
-            model = node2vec.fit(window=10, min_count=1, batch_words=16)
+            node2vec = Node2Vec(g, dimensions=32, walk_length=10, num_walks=5, workers=4)
+            model = node2vec.fit(window=10, min_count=3, batch_words=16)
             self.models[project.id] = model
 
         return self.models[project.id]
