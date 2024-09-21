@@ -1,0 +1,120 @@
+{% load markdown_extras %}
+
+<li class="note-item relative mb-6 border border-gray-200 rounded-lg flex" data-index="{{ counter }}">
+    <a href="{% url 'notes_detail_related' note.pk %}" class="flex w-full">
+        <!-- Note Icon (10% width) -->
+        <div class="flex items-center justify-center w-[10%] bg-gray-50 rounded-l-lg">
+            <span class="text-2xl">{{ note.icon }}</span>
+        </div>
+
+        <!-- Note Content (90% width) -->
+        <div class="w-[90%] p-4">
+            <!-- Picker for content view (top-right corner) -->
+            <div class="picker-container absolute top-2 right-2" data-index="{{ counter }}">
+                <button class="picker-option active" onclick="showContent(this, 'short')">Short</button>
+                <button class="picker-option" onclick="showContent(this, 'full')">Full</button>
+                <button class="picker-option" onclick="showContent(this, 'original')">Original</button>
+                <button class="picker-option" onclick="showContent(this, 'input')">Input</button>
+            </div>
+
+            <!-- Title and Date -->
+            <h3 class="text-xl font-bold mb-2">
+                {{ note.title }}
+                <span class="text-gray-400 text-sm ml-4">{{ note.created_at|date:"F j, Y, g:i a" }}</span>
+            </h3>
+
+            <!-- Note content views -->
+            <div id="note-content-short-{{ counter }}" class="note-content">
+                {{ note.short_summary }}...
+            </div>
+            <div id="note-content-full-{{ counter }}" class="note-content hidden">
+                {{ note.data_sanitized_md|markdown_to_html|safe }}
+            </div>
+
+            <!-- Ensure the "Original" content does not overflow the markdown window -->
+            <div id="note-content-original-{{ counter }}" class="note-content hidden">
+                <pre class="bg-gray-100 p-4 rounded overflow-x-auto break-all whitespace-pre-wrap">{{ note.data_raw }}</pre>
+            </div>
+
+            <!-- Ensure the "Input" content does not overflow the markdown window too -->
+            <div id="note-content-input-{{ counter }}" class="note-content hidden">
+                <pre class="bg-gray-100 p-4 rounded overflow-x-auto break-all whitespace-pre-wrap">{{ note.data_input }}</pre>
+            </div>
+
+            <!-- Show related topics -->
+            <div class="mt-4">
+                <ul class="text-center text-gray-600 text-sm">
+                    {% for topic in note.related_topics %}
+                    <li class="inline">{{ topic.title }}{% if not forloop.last %} &middot; {% endif %}</li>
+                    {% empty %}
+                    <li>No related topics found.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </a>
+
+    <script>
+    function showContent(button, view) {
+        const noteItem = button.closest('.note-item');
+        const index = noteItem.getAttribute('data-index');
+
+        // Hide all content views
+        noteItem.querySelectorAll('.note-content').forEach(el => el.classList.add('hidden'));
+
+        // Show selected content
+        noteItem.querySelector(`#note-content-${view}-${index}`).classList.remove('hidden');
+
+        // Update active button state
+        noteItem.querySelectorAll('.picker-option').forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+    }
+    </script>
+
+    <style>
+    /* Picker styling */
+    .picker-container {
+        display: inline-flex;
+        background-color: white;
+        border-radius: 6px;
+        border: 1px solid #d1d5db;
+        overflow: hidden;
+    }
+
+    .picker-option {
+        padding: 6px 12px;
+        font-size: 0.75rem;
+        color: #4a5568;
+        background-color: white;
+        border: none;
+        cursor: pointer;
+        outline: none;
+        transition: background-color 0.2s ease;
+    }
+
+    .picker-option.active {
+        background-color: #1f2937;
+        color: white;
+    }
+
+    .picker-option:not(.active):hover {
+        background-color: #e2e8f0;
+    }
+
+    /* Note content visibility */
+    .note-content.hidden {
+        display: none;
+    }
+
+    /* Ensure long content in "Original" and "Input" content does not overflow */
+    .note-content pre {
+        max-width: 100%;
+        overflow-x: auto;
+    }
+
+    .note-content pre.break-all {
+        word-wrap: break-word;
+        white-space: pre-wrap;
+    }
+    </style>
+</li>

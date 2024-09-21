@@ -40,6 +40,10 @@ class Node(models.Model):
         raise NotImplementedError("Subclasses must implement this method.")
 
     @classonlymethod
+    def for_node_embeddings(cls, node_embedding_ids):
+        raise NotImplementedError("Subclasses must implement this method.")
+
+    @classonlymethod
     def for_word_embedding(cls, word_embedding_id):
         raise NotImplementedError("Subclasses must implement this method.")
 

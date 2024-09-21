@@ -1,0 +1,25 @@
+{% extends 'core/base.html' %}
+{% load markdown_extras %}
+
+{% block content %}
+<div class="flex mx-auto mt-32 w-11/12 max-w-7xl">
+    <!-- Left side: Current note detail -->
+    <div class="w-1/2 pr-4">
+        {% include 'core/note_detail.html' with note=current_note %}
+    </div>
+
+    <!-- Right side: Related notes list -->
+    <div class="w-1/2 pl-4">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-bold mb-4">Related Notes</h2>
+            <ul>
+                {% for note in related_notes %}
+                    {% include 'core/note_item.html' with note=note counter=forloop.counter %}
+                {% empty %}
+                    <li class="text-gray-500">No related notes found.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

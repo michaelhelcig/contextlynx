@@ -1,5 +1,8 @@
+from django.contrib.contenttypes.models import ContentType
+from torch.nn.functional import embedding
+
 from .web_scrapter_service import WebScraperService
-from ..models import NodeNote, Project, NodeTopic, Edge
+from ..models import NodeNote, Project, NodeTopic, Edge, NodeEmbedding
 from .word_embedding_service import WordEmbeddingService
 from .node_embedding_service import NodeEmbeddingService
 from .background_worker_service import BackgroundWorkerService
@@ -87,9 +90,31 @@ class NoteService:
 
         return note
 
-    def related_notes(self, note, similarity, limit, predicted=False):
-        pass
+    def related_notes(self, note, limit: int):
+        project = note.project
+        content_type = ContentType.objects.get_for_model(NodeNote)
+        embedding = note.node_embedding
 
+        related_notes = list()
+
+        if embedding is None:
+            related_topics = NodeNote.related_topics(note)
+            for topic in related_topics:
+                if topic.node_embedding:
+                    embedding = topic.node_embedding
+                    break
+
+        if embedding:
+            note_ids = NodeNote.objects.filter(project=project).exclude(id=note.id).order_by('-created_at').values_list('id', flat=True)
+            embedding_similarity_tupels = NodeEmbedding.get_n_closest_neighbors(project, embedding.embedding_vector, content_type, note_ids, limit)
+
+            print(f"embedding_similarity_tupels: {embedding_similarity_tupels}")
+
+            if embedding_similarity_tupels:
+                embedding_ids = [tupel[0] for tupel in embedding_similarity_tupels]
+                related_notes = NodeNote.for_node_embeddings(embedding_ids)
+
+        return related_notes
 
     def _constitute_data_raw(self, data_input):
         data_input = data_input.strip()

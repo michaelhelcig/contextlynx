@@ -54,7 +54,7 @@ class NodeEmbeddingService:
             project.latest_node_embedding_calculated = True
             project.save()
 
-        self.calculate_predicted_edges(project)
+        #self.calculate_predicted_edges(project)
 
     def calculate_predicted_edges(self, project):
         with transaction.atomic():

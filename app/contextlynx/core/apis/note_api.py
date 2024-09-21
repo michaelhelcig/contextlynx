@@ -25,7 +25,7 @@ def note(request):
 
         # Add success message
         messages.success(request, 'Note saved successfully!')
-        return redirect(reverse('create_note'))  # Redirect back to the form page
+        return redirect(reverse('notes_detail_related', kwargs={'pk': new_note.id}))  # Redirect to the newly created note's detail
 
     except Exception as e:
         # Capture and print the stack trace

@@ -1,0 +1,56 @@
+{% load markdown_extras %}
+
+<div class="w-full h-full p-4 bg-white rounded-lg shadow-md">
+    <div class="picker-container mb-4">
+        <button class="picker-option active" onclick="showContent(this, 'short')">Short</button>
+        <button class="picker-option" onclick="showContent(this, 'full')">Full</button>
+        <button class="picker-option" onclick="showContent(this, 'original')">Original</button>
+        <button class="picker-option" onclick="showContent(this, 'input')">Input</button>
+    </div>
+
+    <h2 class="text-2xl font-bold mb-2">
+        <span class="text-3xl mr-2">{{ note.icon }}</span>
+        {{ note.title }}
+    </h2>
+    <p class="text-gray-500 mb-4">{{ note.created_at|date:"F j, Y, g:i a" }}</p>
+
+    <div id="note-content-short" class="note-content">
+        {{ note.short_summary }}...
+    </div>
+    <div id="note-content-full" class="note-content hidden">
+        {{ note.data_sanitized_md|markdown_to_html|safe }}
+    </div>
+    <div id="note-content-original" class="note-content hidden">
+        <pre class="bg-gray-100 p-4 rounded overflow-x-auto break-all whitespace-pre-wrap">{{ note.data_raw }}</pre>
+    </div>
+    <div id="note-content-input" class="note-content hidden">
+        <pre class="bg-gray-100 p-4 rounded overflow-x-auto break-all whitespace-pre-wrap">{{ note.data_input }}</pre>
+    </div>
+
+    <div class="mt-4">
+        <h3 class="text-lg font-semibold mb-2">Related Topics:</h3>
+        <ul class="text-gray-600">
+            {% for topic in note.related_topics %}
+            <li class="inline-block mr-2 mb-2 px-2 py-1 bg-gray-200 rounded">{{ topic.title }}</li>
+            {% empty %}
+            <li>No related topics found.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<script>
+function showContent(button, view) {
+    const noteContent = button.closest('.w-full');
+    
+    // Hide all content views
+    noteContent.querySelectorAll('.note-content').forEach(el => el.classList.add('hidden'));
+    
+    // Show selected content
+    noteContent.querySelector(`#note-content-${view}`).classList.remove('hidden');
+    
+    // Update active button state
+    noteContent.querySelectorAll('.picker-option').forEach(btn => btn.classList.remove('active'));
+    button.classList.add('active');
+}
+</script>

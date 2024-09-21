@@ -90,6 +90,10 @@ class NodeNote(Node):
         return cls.objects.filter(project=project).count()
 
     @classmethod
+    def for_node_embeddings(cls, node_embedding_ids):
+        return cls.objects.filter(node_embedding_id__in=node_embedding_ids)
+
+    @classmethod
     def for_word_embedding(cls, word_embedding_id):
         return cls.objects.get(word_embedding_id=word_embedding_id)
 

@@ -1,3 +1,4 @@
+import numpy as np
 from django.db import models
 from pgvector.django import VectorField
 from pgvector.django import HnswIndex
@@ -29,17 +30,27 @@ class NodeEmbedding(models.Model):
     def __str__(self):
         return f"{self.embedding_model} - {self.id} (Node {self.object_id}/{self.content_type})"
 
+    @classmethod
+    def get_n_closest_neighbors(cls, project, embedding, content_type=None, node_ids=None, n=10):
+        """
+        Get top N closest neighbors for the provided `embedding`, limited by optional `content_type`
+        and `node_ids` (a list of object_id values to filter embeddings).
+        """
+        return cls.get_similar_embeddings(project, embedding, content_type=content_type, node_ids=node_ids, threshold=-1, n=n)
 
     @classmethod
-    def get_n_closest_neighbors(cls, project, embedding, content_type=None, n=10):
-        return cls.get_similar_embeddings(project, content_type, embedding, threshold=0, n=n)
+    def get_similar_embeddings(cls, project, embedding, content_type=None, node_ids=None, threshold=0.8, n=None):
+        """
+        Get similar embeddings for a given embedding in a project, filtered optionally by content_type,
+        node_ids (object_ids), and other conditions.
+        """
 
-    @classmethod
-    def get_similar_embeddings(cls, project, embedding, content_type=None, threshold=0.8, n=None):
         if isinstance(embedding, cls):
             vector = embedding.embedding_vector
+        elif isinstance(embedding, np.ndarray):
+            vector = embedding.tolist()
         else:
-            vector = embedding
+            vector = list(embedding)
 
         table_name = cls._meta.db_table  # Get the actual table name for the model
 
@@ -47,7 +58,7 @@ class NodeEmbedding(models.Model):
         query = f"""
                 SELECT id, 1 - (embedding_vector <-> %s::vector) AS similarity
                 FROM {table_name}
-                WHERE project_id = %s 
+                WHERE project_id = %s
                   AND 1 - (embedding_vector <-> %s::vector) >= %s
             """
 
@@ -58,6 +69,11 @@ class NodeEmbedding(models.Model):
         if content_type:
             query += " AND content_type_id = %s"
             params.append(content_type.id)
+
+        # Add node_ids filter if provided
+        if node_ids:
+            query += " AND object_id = ANY(%s)"
+            params.append(list(node_ids))
 
         # Add limit if n is provided
         if n is not None and isinstance(n, int):
@@ -72,4 +88,3 @@ class NodeEmbedding(models.Model):
             results = cursor.fetchall()
 
         return results
-

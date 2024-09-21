@@ -1,9 +1,13 @@
 from django.shortcuts import render, redirect
 from django.views.generic import TemplateView
-from django.views.generic import ListView
+from django.views.generic import ListView, DetailView
 from django.utils.safestring import mark_safe
 import json
+
+from openai import project
+
 from .models import NodeTopic, NodeNote, Edge, Project
+from .services import NoteService
 from .services.background_worker_service import BackgroundWorkerService
 
 
@@ -18,6 +22,28 @@ class MyNotesView(ListView):
     template_name = 'core/notes_list.html'
     context_object_name = 'notes'
     ordering = ['-created_at']
+
+
+class NoteDetailRelatedView(DetailView):
+    model = NodeNote
+    template_name = 'core/notes_detail_related.html'
+    context_object_name = 'current_note'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        project = Project.get_or_create_default_project(user)
+        note_id = self.kwargs['pk']
+
+        if note_id is None:
+            current_note = NodeNote.objects.filter(project=project).order_by('-created_at').first()
+        else:
+            current_note = NodeNote.objects.get(id=note_id)
+
+        related_notes = NoteService().related_notes(current_note, 10)
+
+        context['related_notes'] = related_notes
+        return context
 
 
 class GraphView(TemplateView):

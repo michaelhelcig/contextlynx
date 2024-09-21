@@ -1,229 +1,32 @@
 {% extends 'core/base.html' %}
-
 {% load markdown_extras %}
 
 {% block content %}
-<div class="floating-content bg-white p-6 rounded-lg shadow-md">
-    <h2 class="text-2xl font-bold mb-4">📒 Notes</h2>
-    <ul>
-        {% for note in notes %}
-        <li class="relative mb-6 border border-gray-200 rounded-lg flex">
-            <!-- Note Icon (5% width) -->
-            <div class="flex items-center justify-center w-[5%] bg-gray-50 rounded-l-lg">
-                <span class="text-2xl">{{ note.icon }}</span>
-            </div>
-
-            <!-- Note Content (95% width) -->
-            <div class="w-[95%] p-4">
-                <!-- Picker for content view (top-right corner) -->
-                <div class="picker-container absolute top-2 right-2" data-index="{{ forloop.counter }}">
-                    <button class="picker-option active" onclick="showContent(this, 'short')">Short</button>
-                    <button class="picker-option" onclick="showContent(this, 'full')">Full</button>
-                    <button class="picker-option" onclick="showContent(this, 'original')">Original</button>
-                    <button class="picker-option" onclick="showContent(this, 'Input')">Input</button>
-                </div>
-
-                <!-- Title and Date -->
-                <h3 class="text-xl font-bold mb-2">{{ note.title }}
-                    <span class="text-gray-300 text-sm ml-4">{{ note.created_at|date:"F j, Y, g:i a" }}</span>
-                </h3>
-
-                <!-- Note content views -->
-                <div id="note-content-short-{{ forloop.counter }}" class="note-content">
-                    {{ note.short_summary }}...
-                </div>
-                <div id="note-content-full-{{ forloop.counter }}" class="note-content hidden">
-                    {{ note.data_sanitized_md|markdown_to_html|safe }}
-                </div>
-                <div id="note-content-original-{{ forloop.counter }}" class="note-content hidden">
-                    <pre class="bg-gray-100 p-4 rounded">{{ note.data_raw }}</pre>
-                </div>
-                <div id="note-content-input-{{ forloop.counter }}" class="note-content hidden">
-                    <pre class="bg-gray-100 p-4 rounded">{{ note.data_input }}</pre>
-                </div>
-
-                <!-- Show related topics -->
-                <div class="mt-4">
-                    <ul class="text-center text-modern-blue text-sm">
-                        {% for topic in note.related_topics %}
-                        <li class="inline">{{ topic.title }}{% if not forloop.last %} &middot; {% endif %}</li>
-                        {% empty %}
-                        <li>No related topics found.</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
-        </li>
-        {% empty %}
-        <li>No notes found.</li>
-        {% endfor %}
-    </ul>
+<div class="notes-container mx-auto mt-32"> <!-- Centered container with margin top to adjust for fixed header -->
+    <div class="p-6 bg-white rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold mb-4">📒 Notes</h2>
+        <ul>
+            {% for note in notes %}
+                {% include 'core/note_item.html' with note=note counter=forloop.counter %}
+            {% empty %}
+                <li class="text-gray-500">No notes found.</li>
+            {% endfor %}
+        </ul>
+    </div>
 </div>
 
-<script>
-function showContent(button, view) {
-    const index = button.parentElement.getAttribute('data-index');
-
-    // Get all the content divs
-    const shortContent = document.getElementById(`note-content-short-${index}`);
-    const fullContent = document.getElementById(`note-content-full-${index}`);
-    const originalContent = document.getElementById(`note-content-original-${index}`);
-    const inputContent = document.getElementById(`note-content-input-${index}`);
-
-    // Hide all content
-    shortContent.classList.add('hidden');
-    fullContent.classList.add('hidden');
-    originalContent.classList.add('hidden');
-    inputContent.classList.add('hidden');
-
-    // Show selected content
-    if (view === 'short') {
-        shortContent.classList.remove('hidden');
-    } else if (view === 'full') {
-        fullContent.classList.remove('hidden');
-    } else if (view === 'original') {
-        originalContent.classList.remove('hidden');
-    } else if (view === 'Input') {
-        inputContent.classList.remove('hidden');
+<style>
+    .notes-container {
+        width: 90%;
+        max-width: 1200px;
+        border-radius: 1rem; /* Matches the header */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Matches the shadow of the header */
+        background-color: rgba(255, 255, 255, 0.9); /* Matches the header background */
     }
 
-    // Update active button state
-    const allButtons = button.parentElement.querySelectorAll('.picker-option');
-    allButtons.forEach(btn => btn.classList.remove('active'));
-    button.classList.add('active');
-}
-</script>
-
-<style>
-/* Floating content styles */
-.floating-content {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 90%;
-    max-width: 1200px;
-    max-height: 90vh;
-    overflow-y: auto;
-    background-color: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(10px);
-    border-radius: 1rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    z-index: 900;
-}
-
-/* Custom badge styles based on note type */
-.text-badge {
-    background-color: #1f2937; /* Darker, modern blue */
-}
-.link-badge {
-    background-color: #2d3748; /* Slightly lighter modern blue */
-}
-
-/* Picker styling - Smaller, sleek, aligned to top-right corner */
-.picker-container {
-    display: inline-flex;
-    background-color: white; /* Matches the note container background */
-    border-radius: 6px;  /* Less rounded */
-    border: 1px solid #d1d5db;
-    overflow: hidden;
-    top: 0.5rem;
-    right: 0.5rem;
-    position: absolute;
-}
-
-.picker-option {
-    padding: 6px 12px;  /* Smaller padding */
-    font-size: 0.75rem;  /* Smaller font size */
-    color: #4a5568;
-    background-color: white; /* Same as the background */
-    border: none;
-    cursor: pointer;
-    outline: none;
-    transition: background-color 0.2s ease;
-}
-
-.picker-option.active {
-    background-color: #1f2937;  /* Darker modern blue */
-    color: white;
-}
-
-.picker-option:not(.active):hover {
-    background-color: #e2e8f0;
-}
-
-/* Note content visibility */
-.note-content {
-    display: none;
-}
-
-.note-content.hidden {
-    display: none;
-}
-
-.note-content:not(.hidden) {
-    display: block;
-}
-
-/* Styling for the ORIGINAL content to prevent overflow */
-pre {
-    white-space: pre-wrap;      /* Wraps the text to fit inside the container */
-    word-wrap: break-word;      /* Forces long words to break and wrap within the container */
-    overflow-wrap: break-word;  /* Ensures compatibility for long words */
-    overflow-x: auto;           /* Adds horizontal scrolling for extremely long lines */
-    background-color: #f7fafc;  /* Light background for preformatted text */
-    padding: 1rem;              /* Adds padding for better spacing */
-    border-radius: 0.5rem;      /* Rounded corners for the preformatted block */
-    border: 1px solid #e2e8f0;  /* Adds a light border for better visibility */
-    max-width: 100%;            /* Ensures the block doesn't overflow horizontally */
-    box-sizing: border-box;     /* Ensures padding is included in width calculations */
-}
-
-/* Positioning for created date */
-.relative {
-    position: relative;
-}
-.absolute {
-    position: absolute;
-}
-.top-2 {
-    top: 0.5rem;
-}
-.right-2 {
-    right: 0.5rem;
-}
-
-/* Date styling - pale gray */
-.text-gray-300 {
-    color: #d1d5db;  /* Pale gray */
-}
-
-/* Styling for related topics */
-.text-modern-blue {
-    color: #2d3748; /* Darker blue */
-}
-.text-center {
-    text-align: center;
-}
-.text-sm {
-    font-size: 0.875rem;
-}
-
-/* New styles for the icon container */
-.rounded-l-lg {
-    border-top-left-radius: 0.5rem;
-    border-bottom-left-radius: 0.5rem;
-}
-
-/* Ensure the note content takes up the full width of its container */
-.w-[95%] {
-    width: 95%;
-}
-
-/* Ensure the icon container takes up 5% of the width */
-.w-[5%] {
-    width: 5%;
-}
+    /* If you want to add padding above the notes container to avoid overlap with floating header */
+    .floating-header {
+        margin-bottom: 4rem; /* Optional, provides extra spacing between header and contents */
+    }
 </style>
-
 {% endblock %}
