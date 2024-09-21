@@ -3,7 +3,9 @@ from .node import Node
 from .edge import Edge
 from django.contrib.contenttypes.models import ContentType
 from .embedding_node import NodeEmbedding
+from django.core.exceptions import ObjectDoesNotExist
 from .embedding_word import WordEmbedding
+from django.db import connection
 
 class NodeTopicType(models.TextChoices):
     OTHER = 'OTHER'
@@ -48,13 +50,16 @@ class NodeTopic(Node):
         related_name='topic_word_embeddings'
     )
 
+    def get_content_type(self):
+        return ContentType.objects.get_for_model(self)
+
     def has_edge_to(self, node):
         """
         Check if there is an edge from this NodeTopic to the given node.
         """
         # Ensure the node's content type is the same as NodeTopic
-        from_content_type = ContentType.objects.get_for_model(self)
-        to_content_type = ContentType.objects.get_for_model(node)
+        from_content_type = self.get_content_type()
+        to_content_type = node.get_content_type()
 
         return Edge.objects.filter(
             from_content_type=from_content_type,
@@ -68,8 +73,8 @@ class NodeTopic(Node):
         Get the edge from this NodeTopic to the given node.
         """
         # Ensure the node's content type is the same as NodeTopic
-        from_content_type = ContentType.objects.get_for_model(self)
-        to_content_type = ContentType.objects.get_for_model(node)
+        from_content_type = self.get_content_type()
+        to_content_type = node.get_content_type()
 
         return Edge.objects.get(
             from_content_type=from_content_type,
@@ -80,17 +85,27 @@ class NodeTopic(Node):
 
     def edge_count(self):
         return Edge.objects.filter(
-            from_content_type=ContentType.objects.get_for_model(self),
+            from_content_type=self.get_content_type(),
             from_object_id=self.id
         ).count()
 
     @classmethod
+    def get_by_ids(cls, node_ids):
+        return cls.objects.filter(id__in=node_ids)
+
+    @classmethod
     def for_word_embedding(cls, word_embedding_id):
-        return cls.objects.get(word_embedding_id=word_embedding_id)
+        try:
+            return cls.objects.get(word_embedding_id=word_embedding_id)
+        except ObjectDoesNotExist:
+            return None
 
     @classmethod
     def for_node_embedding(cls, node_embedding_id):
-        return cls.objects.get(node_embedding_id=node_embedding_id)
+        try:
+            return cls.objects.get(node_embedding_id=node_embedding_id)
+        except ObjectDoesNotExist:
+            return None
 
     def __str__(self):
         return self.title

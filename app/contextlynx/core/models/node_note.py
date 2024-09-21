@@ -28,13 +28,16 @@ class NodeNote(Node):
         related_name='note_word_embeddings'
     )
 
+    def get_content_type(self):
+        return ContentType.objects.get_for_model(self)
+
     def has_edge_to(self, node):
         """
         Check if there is an edge from this NodeTopic to the given node.
         """
         # Ensure the node's content type is the same as NodeTopic
-        from_content_type = ContentType.objects.get_for_model(self)
-        to_content_type = ContentType.objects.get_for_model(node)
+        from_content_type = self.get_content_type()
+        to_content_type = node.get_content_type()
 
         return Edge.objects.filter(
             from_content_type=from_content_type,
@@ -48,8 +51,8 @@ class NodeNote(Node):
         Get the edge from this NodeTopic to the given node.
         """
         # Ensure the node's content type is the same as NodeTopic
-        from_content_type = ContentType.objects.get_for_model(self)
-        to_content_type = ContentType.objects.get_for_model(node)
+        from_content_type = self.get_content_type()
+        to_content_type = node.get_content_type()
 
         return Edge.objects.get(
             from_content_type=from_content_type,
@@ -71,7 +74,7 @@ class NodeNote(Node):
         """
         # Get all edges from this note
         edges = Edge.objects.filter(
-            from_content_type=ContentType.objects.get_for_model(self),
+            from_content_type=self.get_content_type(),
             from_object_id=self.id,
             to_content_type=ContentType.objects.get_for_model(NodeTopic)
         )

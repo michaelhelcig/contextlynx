@@ -16,7 +16,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Download models
 RUN python -m spacy download en_core_web_lg
 # RUN python -c "from transformers import pipeline; pipeline('summarization', model='facebook/bart-large-cnn')"
-RUN python -c "from transformers import BertTokenizer, BertModel; BertTokenizer.from_pretrained('bert-base-uncased'); BertModel.from_pretrained('bert-base-uncased')"
+#RUN python -c "from transformers import BertTokenizer, BertModel; BertTokenizer.from_pretrained('bert-base-uncased'); BertModel.from_pretrained('bert-base-uncased')"
 
 # Copy project files
 COPY . /app/

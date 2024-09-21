@@ -18,6 +18,9 @@ class Node(models.Model):
     class Meta:
         abstract = True
 
+    def get_content_type(self):
+        raise NotImplementedError("Subclasses must implement this method.")
+
     def has_edge_to(self, node):
         raise NotImplementedError("Subclasses must implement this method.")
 
@@ -25,6 +28,10 @@ class Node(models.Model):
         raise NotImplementedError("Subclasses must implement this method.")
 
     def edge_count(self):
+        raise NotImplementedError("Subclasses must implement this method.")
+
+    @classonlymethod
+    def get_by_ids(self, node_ids):
         raise NotImplementedError("Subclasses must implement this method.")
 
     @classonlymethod

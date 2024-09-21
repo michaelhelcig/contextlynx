@@ -40,6 +40,7 @@
     <nav class="floating-header">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
             <a href="/" class="text-blue-600 text-2xl font-bold">ContextLynx</a>
+            <!-- Search bar 
             <form action="{% url 'notes' %}" method="get" class="flex-grow mx-4">
                 <div class="relative max-w-lg mx-auto">
                     <input type="text" name="q" placeholder="Search..." class="search-bar w-full pl-10 pr-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="search-input">
@@ -48,6 +49,7 @@
                     </svg>
                 </div>
             </form>
+            -->
             <div class="flex items-center space-x-3">
                 <a href="{% url 'create_note' %}" class="text-gray-700 hover:text-blue-600 text-2xl mx-1">✍️</a>
                 <a href="{% url 'notes' %}" class="text-gray-700 hover:text-blue-600 text-2xl mx-1 border-l border-gray-200 pl-3">📒</a>

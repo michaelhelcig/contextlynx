@@ -4,11 +4,14 @@ from .project import Project
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from .node import Node
+from django.db import connection
 import uuid
 
 class Edge(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+
+    predicted = models.BooleanField(default=False)
 
     from_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name='from_edges')
     from_object_id = models.PositiveIntegerField()
@@ -39,6 +42,38 @@ class Edge(models.Model):
         )
 
         return froms.union(tos)
+
+    @classmethod
+    def get_n_largest_nodes(cls, project, content_type, n=10):
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                WITH ranked_nodes AS (
+                    SELECT DISTINCT ON (node_id)
+                        COALESCE(from_object_id, to_object_id) as node_id,
+                        CASE
+                            WHEN from_object_id IS NOT NULL THEN from_content_type_id
+                            ELSE to_content_type_id
+                        END as content_type_id,
+                        COUNT(*) OVER (PARTITION BY COALESCE(from_object_id, to_object_id)) as edge_count
+                    FROM 
+                        %(edge_table)s
+                    WHERE 
+                        project_id = %%s AND
+                        (
+                            (from_content_type_id = %%s AND from_object_id IS NOT NULL) OR
+                            (to_content_type_id = %%s AND to_object_id IS NOT NULL)
+                        )
+                )
+                SELECT node_id, content_type_id, edge_count
+                FROM ranked_nodes
+                ORDER BY edge_count DESC
+                FETCH FIRST %%s ROWS ONLY
+            """ % {'edge_table': cls._meta.db_table},
+                           [project.id, content_type.id, content_type.id, n])
+
+            return cursor.fetchall()
+
+            return cursor.fetchall()
 
     def __str__(self):
         return f"{self.from_node} -> {self.to_node} ({self.similarity})"

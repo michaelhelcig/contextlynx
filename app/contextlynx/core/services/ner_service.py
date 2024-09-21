@@ -16,24 +16,32 @@ class NERService:
         self.nlp = spacy.load(self.model)
 
     def get_named_entities(self, text, existing_topics=None):
+        if existing_topics is None:
+            existing_topics = list()
+
         doc = self.nlp(text)
         entities = []
 
         # Step 1: Collect all entities
         for ent in doc.ents:
             data_type = NERService._map_entity(ent.label_)
-            text = ent.text
-            if data_type:  # Only add entities that are not in the ignored categories
+
+            if data_type in [NodeTopicType.PERSON, NodeTopicType.ORGANIZATION, NodeTopicType.LOCATION]:
+                text = self._get_without_apostrophe(ent.text)
+            else:
+                text = self._get_lemma(ent)
+
+            if data_type:  # Only add entities that have a valid mapped type
                 entities.append({
                     'title': text,
                     'data_type': data_type,
                 })
 
         # Step 2: Add existing topics to the entities list
-        if existing_topics:
-            entities.extend(existing_topics)
+        # We don't filter or change the existing topics; they are added as-is
+        unique_entities = list(existing_topics)
 
-        # Step 3: Filter out entities that are contained within others
+        # Step 3: Filter out entities that are contained within others (from new entities only)
         filtered_entities = []
         for i, entity in enumerate(entities):
             is_contained = False
@@ -41,23 +49,35 @@ class NERService:
                 if i != j and other['data_type'] == entity['data_type'] and \
                         entity['title'].lower() in other['title'].lower() and \
                         entity['title'].lower() != other['title'].lower():
-                    # If the entity is contained within another entity
+                    # If the entity is contained within another entity, skip it
                     is_contained = True
                     break
 
             if not is_contained:
                 filtered_entities.append(entity)
 
-        # Step 4: Remove duplicates based on title and data_type
-        unique_entities = []
-        seen = set()
+        # Step 4: Remove duplicates based on title and data_type (checking only the newly discovered entities)
+        seen = set((topic['title'].lower(), topic['data_type']) for topic in existing_topics)  # Existing topics as seen
         for entity in filtered_entities:
             key = (entity['title'].lower(), entity['data_type'])
             if key not in seen:
                 seen.add(key)
                 unique_entities.append(entity)
 
+        # Step 5: Return the final list which combines existing topics and unique new entities
         return unique_entities
+
+    @staticmethod
+    def _get_lemma(ent):
+        """Extract the lemmatized form of an entity"""
+        return ' '.join([token.lemma_ for token in ent])
+
+    @staticmethod
+    def _get_without_apostrophe(text):
+        # Remove apostrophes from named entities
+        if text.endswith("'s"):
+            text = text[:-2]
+        return text
 
     @staticmethod
     def _map_entity(ent_type):

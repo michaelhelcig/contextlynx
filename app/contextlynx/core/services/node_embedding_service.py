@@ -3,6 +3,8 @@ import networkx as nx
 from node2vec import Node2Vec
 from ..models.edge import Edge
 from ..models.embedding_node import NodeEmbedding
+from ..models.node_topic import NodeTopic
+from ..models.node_note import NodeNote
 
 
 class NodeEmbeddingService:
@@ -30,15 +32,19 @@ class NodeEmbeddingService:
         print(f"Index to key: {model.wv.index_to_key}")
 
         with transaction.atomic():
+            note_nodes = NodeNote.objects.filter(project=project).all()
+            topic_nodes = NodeTopic.objects.filter(project=project).all()
+            nodes = list(note_nodes) + list(topic_nodes)
+            for node in nodes:
+                if str(node.id) not in model.wv.index_to_key:
+                    node_embedding = [0] * 96
+                else:
+                    node_embedding = model.wv[str(node.id)]
+                self._update_node_embedding(node, node_embedding)
+
             for edge in edges:
                 from_node = edge.from_node
                 to_node = edge.to_node
-
-                from_node_embedding = model.wv[str(from_node.id)]
-                to_node_embedding = model.wv[str(to_node.id)]
-
-                self._update_node_embedding(from_node, from_node_embedding)
-                self._update_node_embedding(to_node, to_node_embedding)
 
                 similarity = model.wv.similarity(str(from_node.id), str(to_node.id))
                 edge.similarity = similarity
@@ -48,16 +54,22 @@ class NodeEmbeddingService:
             project.save()
 
     def _update_node_embedding(self, node, embedding_vector):
-
         try:
             if node.node_embedding is not None:
-                node.node_embedding.delete()
+                # Delete the old embedding from the database
+                embedding = node.node_embedding
+                embedding.delete()
+                # Set the reference to None to remove it from the object
+                node.node_embedding = None
+                node.save()
         except:
             pass
 
         # Create new embedding
         embedding = NodeEmbedding.objects.create(
             project=node.project,
+            content_object=node,
+            content_type=node.get_content_type(),
             embedding_model=self.embedding_model,
             embedding_vector=embedding_vector
         )

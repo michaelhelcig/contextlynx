@@ -24,7 +24,17 @@ class NoteService:
     def create_note(self, user, data_input):
         with transaction.atomic():
             project = Project.get_or_create_default_project(user)
-            existing_topics = NodeTopic.objects.filter(project=project)
+
+            existing_topics_largest = self.topic_service.get_n_largest_topics(project, 20)
+            existing_topics_similar = self.topic_service.search_topics_word_embedding(project, data_input, True, 0, 10)
+
+            print(f"existing_topics_largest: {existing_topics_largest}")
+            print(f"existing_topics_similar: {existing_topics_similar}")
+
+            print(f"existing_topics_largest size: {len(existing_topics_largest)}")
+            print(f"existing_topics_similar size: {len(existing_topics_similar)}")
+
+            existing_topics = set(existing_topics_largest + existing_topics_similar)
 
             data_raw, data_type = self.constitute_data_raw(data_input)
 
@@ -60,11 +70,15 @@ class NoteService:
             topics = set()
             topics_json = self.nlp_service.ner().get_named_entities(data_sanitized_md, topics_json)
 
+            print(f"topics_json: {topics_json}")
+
             for topic_json in topics_json:
                 topic_title = topic_json.get('title')
                 topic_data_type = topic_json.get('data_type')
 
-                topic = self.topic_service.ensure_topic(project, topic_title, language, topic_data_type)
+                print(f"topic_title: {topic_title}, topic_data_type: {topic_data_type}")
+                topic, created = self.topic_service.ensure_topic(project, topic_title, language, topic_data_type)
+                print(f"topic: {topic}, created: {created}")
 
                 self._create_edge_for_topic(project, note, topic)
                 topics.add(topic)
