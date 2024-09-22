@@ -93,15 +93,28 @@ class NodeEmbeddingService:
         if not (project.latest_node_embedding_calculated and project.id in self.models):
             edges = Edge.objects.filter(project=project).all()
 
-            if len(edges) == 0:
-                return None
+            if len(edges) != 0:
+                g = self._generate_graph(edges)
 
-            g = self._generate_graph(edges)
-            node2vec = Node2Vec(g, dimensions=32, walk_length=10, num_walks=5, workers=4)
-            model = node2vec.fit(window=10, min_count=3, batch_words=16)
-            self.models[project.id] = model
+                node2vec = Node2Vec(
+                    g,
+                    dimensions=16,
+                    walk_length=10,
+                    num_walks=30,
+                    p=2,  # Return parameter
+                    q=0.25,  # In-out parameter
+                    workers=1
+                )
 
-        return self.models[project.id]
+                model = node2vec.fit(
+                    window=5,
+                    min_count=1,
+                    batch_words=4
+                )
+
+                self.models[project.id] = model
+
+        return self.models.get(project.id)
 
     def _update_node_embedding(self, node, embedding_vector):
         try:

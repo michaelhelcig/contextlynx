@@ -1,5 +1,52 @@
 {% load markdown_extras %}
 
+<style>
+    /* Picker styling */
+    .picker-container {
+        display: inline-flex;
+        background-color: white;
+        border-radius: 6px;
+        border: 1px solid #d1d5db;
+        overflow: hidden;
+    }
+
+    .picker-option {
+        padding: 6px 12px;
+        font-size: 0.75rem;
+        color: #4a5568;
+        background-color: white;
+        border: none;
+        cursor: pointer;
+        outline: none;
+        transition: background-color 0.2s ease;
+    }
+
+    .picker-option.active {
+        background-color: #1f2937;
+        color: white;
+    }
+
+    .picker-option:not(.active):hover {
+        background-color: #e2e8f0;
+    }
+
+    /* Note content visibility */
+    .note-content.hidden {
+        display: none;
+    }
+
+    /* Ensure long content in "Original" and "Input" content does not overflow */
+    .note-content pre {
+        max-width: 100%;
+        overflow-x: auto;
+    }
+
+    .note-content pre.break-all {
+        word-wrap: break-word;
+        white-space: pre-wrap;
+    }
+</style>
+
 <div class="w-full h-full p-4 bg-white rounded-lg shadow-md flex flex-col justify-between">
     <!-- Picker Section (Centered Top) -->
     <div class="picker-container mb-4 flex justify-center">
@@ -10,7 +57,7 @@
     </div>
 
     <!-- Note Content Section -->
-    <div>
+    <div class="flex-grow">
         <h2 class="text-2xl font-bold mb-2">
             <span class="text-3xl mr-2">{{ note.icon }}</span>
             {{ note.title }}
@@ -21,7 +68,7 @@
         <div id="note-detail-content-short" class="note-detail-content">
             {{ note.short_summary }}...
         </div>
-        
+
         <!-- Full View (Hidden by default) -->
         <div id="note-detail-content-full" class="note-detail-content hidden">
             {{ note.data_sanitized_md|markdown_to_html|safe }}
@@ -31,7 +78,7 @@
         <div id="note-detail-content-original" class="note-detail-content hidden">
             <pre class="bg-gray-100 p-4 rounded overflow-x-auto break-all whitespace-pre-wrap">{{ note.data_raw }}</pre>
         </div>
-        
+
         <!-- Input View (Hidden by default) -->
         <div id="note-detail-content-input" class="note-detail-content hidden">
             <pre class="bg-gray-100 p-4 rounded overflow-x-auto break-all whitespace-pre-wrap">{{ note.data_input }}</pre>
@@ -55,13 +102,13 @@
 <script>
 function showContent(button, view) {
     const noteContent = button.closest('.w-full');
-    
+
     // Hide all content views
     noteContent.querySelectorAll('.note-detail-content').forEach(el => el.classList.add('hidden'));
-    
+
     // Show selected content
     noteContent.querySelector(`#note-detail-content-${view}`).classList.remove('hidden');
-    
+
     // Update active button state
     noteContent.querySelectorAll('.picker-option').forEach(btn => btn.classList.remove('active'));
     button.classList.add('active');

@@ -84,10 +84,8 @@ class NERService:
         """Map spaCy entity types to NodeTopicDataType"""
         mapping = {
             "PERSON": NodeTopicType.PERSON,
-            "ORG": NodeTopicType.ORGANIZATION,
             "GPE": NodeTopicType.LOCATION,
             "LOC": NodeTopicType.LOCATION,
-            "DATE": NodeTopicType.DATE,
             "EVENT": NodeTopicType.EVENT,
             "PRODUCT": NodeTopicType.PRODUCT,
             "WORK_OF_ART": NodeTopicType.WORK_OF_ART,
@@ -100,6 +98,8 @@ class NERService:
         }
 
         ignored_categories = {
+            "DATE": NodeTopicType.DATE,
+            "ORG": NodeTopicType.ORGANIZATION,
             "CARDINAL": NodeTopicType.QUANTITY,
             "ORDINAL": NodeTopicType.QUANTITY,
             "PERCENT": None,

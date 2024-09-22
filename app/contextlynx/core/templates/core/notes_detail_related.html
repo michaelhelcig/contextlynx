@@ -2,20 +2,20 @@
 {% load markdown_extras %}
 
 {% block content %}
-<div class="flex mx-auto w-11/12 max-w-7xl" style="height: calc(100vh - 5rem); margin-top: 7rem;">
+<div class="flex mx-auto w-11/12 max-w-7xl pt-32" style="overflow: hidden;">
     {% if current_note %}
-    <!-- Left side: Current note detail -->
-    <div class="w-1/2 pr-4 h-full overflow-y-auto">
-        {% include 'core/note_detail.html' with note=current_note %}
+    <div class="w-1/2 pr-4 flex">
+        <div class="w-full overflow-hidden">
+            {% include 'core/note_detail.html' with note=current_note %}
+        </div>
     </div>
 
-    <!-- Right side: Related notes list -->
-    <div class="w-1/2 pl-4 h-full">
-        <div class="bg-white rounded-lg shadow-md p-6 h-full overflow-y-auto">
+    <div class="w-1/2 pl-4 flex">
+        <div class="bg-white rounded-lg shadow-md p-6 w-full" style="min-height: 80vh;">
             <h2 class="text-2xl font-bold mb-4">Related Notes</h2>
             <ul>
                 {% for note in related_notes %}
-                    {% include 'core/note_item.html' with note=note counter=forloop.counter %}
+                    {% include 'core/note_item_small.html' with note=note counter=forloop.counter %}
                 {% empty %}
                     <li class="text-gray-500">No related notes found.</li>
                 {% endfor %}
@@ -23,7 +23,6 @@
         </div>
     </div>
     {% else %}
-    <!-- Display sad cat emoji and message if no current note is available -->
     <div class="flex justify-center items-center w-full h-full">
         <div class="text-center">
             <p class="text-6xl">😿</p>

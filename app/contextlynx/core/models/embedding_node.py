@@ -10,7 +10,7 @@ from django.db import connection
 class NodeEmbedding(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     embedding_model = models.CharField(max_length=50)
-    embedding_vector = VectorField(dimensions=32)
+    embedding_vector = VectorField(dimensions=16)
 
     content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null=True, blank=True)
     object_id = models.PositiveIntegerField(null=True, blank=True)

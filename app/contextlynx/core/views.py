@@ -49,6 +49,9 @@ class NoteDetailRelatedView(TemplateView):
 class GraphView(TemplateView):
     template_name = 'core/knowledge.html'
 
+    def _scale_similarity(self, similarity):
+        return (similarity + 1) / 2
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
@@ -117,7 +120,7 @@ class GraphView(TemplateView):
                 links.append({
                     "source": f"{'topic' if isinstance(edge.from_node, NodeTopic) else 'note'}_{edge.from_node.id}",
                     "target": f"{'topic' if isinstance(edge.to_node, NodeTopic) else 'note'}_{edge.to_node.id}",
-                    "similarity": edge.similarity,
+                    "similarity": self._scale_similarity(edge.similarity),
                     "color": 'red' if edge.predicted else 'black'
                 })
 
