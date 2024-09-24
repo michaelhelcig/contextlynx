@@ -19,11 +19,12 @@ python manage.py migrate --noinput
 # Collect static files
 python manage.py collectstatic --noinput
 
-# Determine the number of CPU cores
-NUM_CORES=$(nproc)
 
-# Calculate the number of workers
-NUM_WORKERS=$((2 * NUM_CORES + 1))
+# Check if NUM_WORKERS is already set
+if [ -z "${NUM_WORKERS}" ]; then
+  # If not set, calculate the number of workers
+  NUM_WORKERS=$(nproc)
+fi
 
 # Run the application with the calculated number of workers
 exec gunicorn --timeout 300 --workers $NUM_WORKERS --bind 0.0.0.0:8000 contextlynx.wsgi:application
