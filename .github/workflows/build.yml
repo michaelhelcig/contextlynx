@@ -24,14 +24,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Export Tag
-        run: echo ::set-env name=tag::$(echo ${{ github.ref_name }} | tr -d /)
-
       - name: Build Docker Image
         run: |
+          tag="$(echo "${{ github.ref_name }}" | tr -c '[:alnum:]' '-')"
           cd app/contextlynx
           docker build -t ghcr.io/${{ github.repository }}/contextlynx:$tag-latest .
 
       - name: Push Docker Image
         run: |
+          tag="$(echo "${{ github.ref_name }}" | tr -c '[:alnum:]' '-')"
           docker push ghcr.io/${{ github.repository }}/contextlynx:$tag-latest
