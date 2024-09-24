@@ -61,14 +61,13 @@ class WebScraperService:
     def get_youtube_meta(self, video_id):
         yt = YouTube(f"https://www.youtube.com/watch?v={video_id}")
         metadata = {
-            'title': yt.title,
-            'author': yt.author,
-            'publish_date': yt.publish_date.strftime('%Y-%m-%d'),
-            'views': yt.views,
-            'length': yt.length,
-            'description': yt.description,
-            'thumbnail_url': yt.thumbnail_url,
-            'rating': yt.rating
+            'title': yt['title'],
+            'author': yt['author'],
+            'views': yt['views'],
+            'length': yt['length'],
+            'publish_date': yt['publish_date'],
+            'description': yt['description'],
+            'thumbnail_url': yt['thumbnail_url']
         }
         return metadata
 
@@ -83,6 +82,7 @@ Title: {meta['title']}
 Author: {meta['author']}
 Publish Date: {meta['publish_date']}
 Description: {meta['description']}
+Length: {meta['length']}
 
 # Transcript
 """
