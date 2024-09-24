@@ -14,7 +14,7 @@ class OpenAiService:
     def _initialize(self):
         self.api_key = settings.OPENAI_API_KEY
         self.client = OpenAI(api_key=self.api_key)
-        self.model = "gpt-4o-mini"
+        self.model = settings.OPENAI_MODEL
 
     def get_model(self):
         return self.model

@@ -7,6 +7,7 @@ from .word_embedding_service import WordEmbeddingService
 from ..models import NodeTopic, NodeTopicType, WordEmbedding, NodeEmbedding
 from ..models import Edge
 from django.db import transaction
+from django.db.models import Case, When
 
 class TopicService:
     def __init__(self):
@@ -103,22 +104,22 @@ class TopicService:
             return topics
 
         all_related_topic_tupels = list()
-        for topic in topics:
-            content_type = ContentType.objects.get_for_model(NodeTopic)
+        content_type = ContentType.objects.get_for_model(NodeTopic)
 
-            related_topic_tupels = Edge.get_n_nearest_nodes(topic, content_type, limit)
-            all_related_topic_tupels.extend(related_topic_tupels)
+        all_related_topic_tupels = Edge.get_n_nearest_nodes(topics, content_type, limit)
+        
+        topic_ids = [tupel[0] for tupel in all_related_topic_tupels]
 
-        all_related_topic_tupels = sorted(all_related_topic_tupels, key=lambda x: x[3], reverse=False)
+        # Use Case and When to preserve the order of the note_ids
+        preserved_order = Case(
+            *[When(id=note_id, then=pos) for pos, note_id in enumerate(topic_ids)]
+        )
 
-        # get top limit related topics
-        related_topic_ids = [tupel[0] for tupel in all_related_topic_tupels]
-
-        # get first "limit" topic ids
-        related_topic_ids = related_topic_ids[:limit - len(topics)]
-        related_topics = NodeTopic.get_by_ids(related_topic_ids)
-
-        return list(related_topics) + topics
+        related_topics = NodeTopic.objects.filter(id__in=topic_ids).order_by(preserved_order)
+        related_topics = list(related_topics)
+        related_topics = related_topics[:limit - len(topics)]
+        
+        return topics + list(related_topics)
 
     def get_n_largest_topics(self, project, n):
         tupels = Edge.get_n_largest_nodes(project, ContentType.objects.get_for_model(NodeTopic), n)

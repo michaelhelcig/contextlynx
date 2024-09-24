@@ -12,6 +12,17 @@
 
     <div class="w-1/2 pl-4 flex">
         <div class="bg-white rounded-lg shadow-md p-6 w-full" style="min-height: 80vh; max-height: 80vh; overflow-y: auto;">
+            <style>
+                /* Hide scrollbar for Webkit browsers */
+                .bg-white::-webkit-scrollbar {
+                    display: none;
+                }
+                /* Hide scrollbar for other browsers (Firefox, IE) */
+                .bg-white {
+                    scrollbar-width: none; /* Firefox */
+                    -ms-overflow-style: none; /* IE 10+ */
+                }
+            </style>
             <h2 class="text-2xl font-bold mb-4">Related Notes</h2>
             <ul>
                 {% for note in related_notes %}

@@ -12,6 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # also keep all other secrets secret!
 SECRET_KEY = os.getenv('SECRET_KEY')
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+OPENAI_MODEL = os.getenv('OPENAI_MODEL', default='gpt-4o-mini')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', default=False)
