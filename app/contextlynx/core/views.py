@@ -9,6 +9,7 @@ from .services.background_worker_service import BackgroundWorkerService
 import random
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+from django.views import View
 
 @method_decorator(login_required(login_url='/login'), name='dispatch')
 class Error404View(View):
