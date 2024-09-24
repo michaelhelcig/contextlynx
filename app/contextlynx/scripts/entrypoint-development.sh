@@ -11,7 +11,7 @@ done
 
 # Create superuser and set password
 python manage.py shell <<EOF
-from core.models import User
+from accounts.models import User
 
 # Check if the admin user exists, if not, create it
 if not User.objects.filter(username='admin').exists():

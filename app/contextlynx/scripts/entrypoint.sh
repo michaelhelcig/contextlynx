@@ -12,6 +12,8 @@ until python manage.py migrate; do
   sleep 3
 done
 
+python -m spacy download en_core_web_lg
+
 # Apply database migrations
 python manage.py migrate --noinput
 

@@ -6,13 +6,36 @@ import json
 from .models import NodeTopic, NodeNote, Edge, Project
 from .services import NoteService
 from .services.background_worker_service import BackgroundWorkerService
-
+import random
 
 def error_404(request, exception=None):
     return redirect('/create')
 
+
 def create_note(request):
-    return render(request, 'core/create_note.html')
+    user = request.user
+    username = user.username.capitalize()
+
+    welcome_messages = [
+        f"Hi, { username }! What insights would you like to jot down today?",
+        f"Hello, { username }! Ready to add some new notes to your knowledge database?",
+        f"Greetings, { username }! Let's capture your thoughts and ideas.",
+        f"Ahoy, { username }! What would you like to document today?",
+        f"Hey there, { username }! Start writing your next great note.",
+        f"Welcome, { username }! What knowledge will you share today?",
+        f"Salutations, { username }! It's time to organize your thoughts.",
+        f"Howdy, { username }! What notes can we create for you today?",
+        f"Hiya, { username }! Let's make some notes to remember.",
+        f"What’s up, { username }? Ready to start documenting your ideas?"
+    ]
+
+    selected_message = random.choice(welcome_messages)
+
+    context = {
+        'welcome_message': selected_message
+    }
+
+    return render(request, 'core/create_note.html', context)
 
 class MyNotesView(ListView):
     model = NodeNote

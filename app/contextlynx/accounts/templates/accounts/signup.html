@@ -1,0 +1,53 @@
+{% extends "accounts/base.html" %}
+
+{% block title %}Sign Up - ContextLynx{% endblock %}
+
+{% block content %}
+{% if form.non_field_errors %}
+<div class="text-red-600 mb-4">
+    {{ form.non_field_errors }}
+</div>
+{% endif %}
+
+<form method="post" class="space-y-6">
+    {% csrf_token %}
+    <div class="input-container">
+        <input type="text" name="username" id="id_username" required class="auth-input block w-full px-4 text-lg bg-transparent border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Username">
+        <label for="id_username" class="floating-label">Username</label>
+        {% if form.username.errors %}
+        <div class="text-red-600 mt-1 text-sm">
+            {{ form.username.errors }}
+        </div>
+        {% endif %}
+    </div>
+    <div class="input-container">
+        <input type="password" name="password1" id="id_password1" required class="auth-input block w-full px-4 text-lg bg-transparent border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Password">
+        <label for="id_password1" class="floating-label">Password</label>
+        {% if form.password1.errors %}
+        <div class="text-red-600 mt-1 text-sm">
+            {{ form.password1.errors }}
+        </div>
+        {% endif %}
+    </div>
+    <div class="input-container">
+        <input type="password" name="password2" id="id_password2" required class="auth-input block w-full px-4 text-lg bg-transparent border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Confirm Password">
+        <label for="id_password2" class="floating-label">Confirm Password</label>
+        {% if form.password2.errors %}
+        <div class="text-red-600 mt-1 text-sm">
+            {{ form.password2.errors }}
+        </div>
+        {% endif %}
+    </div>
+    <div class="flex justify-end mt-2">
+        <button type="submit" class="auth-button text-white w-12 h-12 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+        </button>
+    </div>
+</form>
+
+<p class="mt-6 text-center text-sm text-gray-600">
+    Already have an account? <a href="{% url 'login' %}" class="font-medium text-blue-600 hover:text-blue-500">Log in</a>
+</p>
+{% endblock %}

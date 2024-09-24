@@ -1,4 +1,3 @@
-from .user import User
 from .project import Project
 from .node_note import NodeNote
 from .node_topic import NodeTopic, NodeTopicType

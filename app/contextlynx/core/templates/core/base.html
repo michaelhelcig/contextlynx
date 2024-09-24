@@ -5,7 +5,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="shortcut icon" type="image/png" href="{% static 'favicon.svg' %}"/>
+    <!--- <link rel="shortcut icon" type="image/png" href="{% static 'favicon.svg' %}"/> --->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📒</text></svg>">
     <title>ContextLynx</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -44,7 +45,7 @@
             <div class="flex items-center space-x-3">
                 <a href="{% url 'create_note' %}" class="text-gray-700 hover:text-blue-600 text-2xl mx-1">✍️</a>
                 <a href="{% url 'notes_detail_related_latest' %}" class="text-gray-700 hover:text-blue-600 text-2xl mx-1 border-l border-gray-200 pl-3">🔍</a>
-                <a href="{% url 'notes' %}" class="text-gray-700 hover:text-blue-600 text-2xl mx-1 border-l border-gray-200 pl-3">📒</a>
+                <a href="{% url 'notes' %}" class="text-gray-700 hover:text-blue-600 text-2xl mx-1 border-l border-gray-200 pl-3">📁</a>
                 <a href="{% url 'knowledge' %}" class="text-gray-700 hover:text-blue-600 text-2xl mx-1 border-l border-gray-200 pl-3">🧠</a>
             </div>
         </div>

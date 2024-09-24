@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Project, Edge, NodeEmbedding, WordEmbedding, NodeNote, NodeTopic, User
+from .models import Project, Edge, NodeEmbedding, WordEmbedding, NodeNote, NodeTopic
 
 # Project Admin
 @admin.register(Project)
@@ -52,8 +52,3 @@ class NodeTopicAdmin(admin.ModelAdmin):
     list_display = ('id', 'title', 'data_type', 'language', 'disabled', 'created_at', 'updated_at')
     search_fields = ('title', 'data_type')
     list_filter = ('data_type', 'language', 'disabled')
-
-# User Admin (Custom UserAdmin)
-@admin.register(User)
-class CustomUserAdmin(UserAdmin):
-    pass
