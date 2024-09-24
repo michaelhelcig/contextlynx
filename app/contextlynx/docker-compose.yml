@@ -20,6 +20,7 @@ services:
       - COREDB_HOST=coredb
       - DEBUG=False
       - ENVIRONMENT=production
+      - FQDN=localhost
     env_file:
       - .env
 

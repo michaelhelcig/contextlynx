@@ -10,36 +10,40 @@ import random
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 
-login_required(login_url='/login')
-def error_404(request, exception=None):
-    return redirect('/create')
+@method_decorator(login_required(login_url='/login'), name='dispatch')
+class Error404View(View):
+    def get(self, request, exception=None):
+        return redirect('/create')
 
 
-login_required(login_url='/login')
-def create_note(request):
-    user = request.user
-    username = user.username.capitalize()
+@method_decorator(login_required(login_url='/login'), name='dispatch')
+class CreateNoteView(View):
+    template_name = 'core/create_note.html'
 
-    welcome_messages = [
-        f"Hi, { username }! What insights would you like to jot down today?",
-        f"Hello, { username }! Ready to add some new notes to your knowledge database?",
-        f"Greetings, { username }! Let's capture your thoughts and ideas.",
-        f"Ahoy, { username }! What would you like to document today?",
-        f"Hey there, { username }! Start writing your next great note.",
-        f"Welcome, { username }! What knowledge will you share today?",
-        f"Salutations, { username }! It's time to organize your thoughts.",
-        f"Howdy, { username }! What notes can we create for you today?",
-        f"Hiya, { username }! Let's make some notes to remember.",
-        f"What’s up, { username }? Ready to start documenting your ideas?"
-    ]
+    def get(self, request):
+        user = request.user
+        username = user.username.capitalize()
 
-    selected_message = random.choice(welcome_messages)
+        welcome_messages = [
+            f"Hi, {username}! What insights would you like to jot down today?",
+            f"Hello, {username}! Ready to add some new notes to your knowledge database?",
+            f"Greetings, {username}! Let's capture your thoughts and ideas.",
+            f"Ahoy, {username}! What would you like to document today?",
+            f"Hey there, {username}! Start writing your next great note.",
+            f"Welcome, {username}! What knowledge will you share today?",
+            f"Salutations, {username}! It's time to organize your thoughts.",
+            f"Howdy, {username}! What notes can we create for you today?",
+            f"Hiya, {username}! Let's make some notes to remember.",
+            f"What’s up, {username}? Ready to start documenting your ideas?"
+        ]
 
-    context = {
-        'welcome_message': selected_message
-    }
+        selected_message = random.choice(welcome_messages)
 
-    return render(request, 'core/create_note.html', context)
+        context = {
+            'welcome_message': selected_message
+        }
+
+        return render(request, self.template_name, context)
 
 @method_decorator(login_required(login_url='/login'), name='dispatch')
 class MyNotesView(ListView):

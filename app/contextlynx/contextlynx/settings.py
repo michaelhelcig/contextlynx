@@ -18,6 +18,8 @@ DEBUG = os.getenv('DEBUG', default=False)
 
 ALLOWED_HOSTS = ["*", "localhost"]
 
+CSRF_TRUSTED_ORIGINS = [ os.getenv('FQDN', default='http://localhost:8000') ]
+
 AUTH_USER_MODEL = 'accounts.User'
 LOGIN_REDIRECT_URL = 'create_note'
 

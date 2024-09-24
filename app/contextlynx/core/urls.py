@@ -12,11 +12,11 @@ urlpatterns = [
     path('knowledge/', views.GraphView.as_view(), name='knowledge'),
     path('notes/<uuid:slug>/related/', views.NoteDetailRelatedView.as_view(), name='notes_detail_related'),
     path('notes/latest/related/', views.NoteDetailRelatedView.as_view(), name='notes_detail_related_latest'),
-    path('create/', views.create_note, name='create_note'),
+    path('create/', views.CreateNoteView.as_view(), name='create_note'),
 
     # API endpoints
     path('api/notes/', note_api.note, name='new_note'),
 ]
 
 # Custom 404 handler
-handler404 = 'core.views.error_404'
+handler404 = 'core.views.Error404View'
