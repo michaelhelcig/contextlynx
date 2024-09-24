@@ -28,6 +28,8 @@ class NERService:
 
             if data_type in [NodeTopicType.PERSON, NodeTopicType.ORGANIZATION, NodeTopicType.LOCATION]:
                 text = self._get_without_apostrophe(ent.text)
+            elif data_type in [NodeTopicType.NATIONALITY]:
+                text = self._get_titlecase(ent.text)
             else:
                 text = self._get_lemma(ent)
 
@@ -66,6 +68,11 @@ class NERService:
 
         # Step 5: Return the final list which combines existing topics and unique new entities
         return unique_entities
+
+    @staticmethod
+    def _get_titlecase(text):
+        # return lower with first letter of word uppercase
+        return ' '.join([token.capitalize() for token in text.split(' ')])
 
     @staticmethod
     def _get_lemma(ent):

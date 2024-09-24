@@ -5,8 +5,10 @@ from . import Project
 from .embedding_node import NodeEmbedding
 from .embedding_word import WordEmbedding
 import uuid
+from django.db import connection
 
 class Node(models.Model):
+    id = models.IntegerField(primary_key=True)
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     disabled = models.BooleanField(default=False)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
@@ -18,6 +20,16 @@ class Node(models.Model):
 
     class Meta:
         abstract = True
+
+    def save(self, *args, **kwargs):
+        # Check if the instance is new and doesn't have an `id`
+        if self.id is None:
+            # Connect to the database and fetch the next value from the shared sequence
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT nextval('node_id_seq')")
+                self.id = cursor.fetchone()[0]
+        # Call the real save method to actually store the object
+        super().save(*args, **kwargs)
 
     def get_content_type(self):
         raise NotImplementedError("Subclasses must implement this method.")

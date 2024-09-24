@@ -1,5 +1,5 @@
 from django.contrib.contenttypes.models import ContentType
-from torch.nn.functional import embedding
+from django.db.models import Case, When
 
 from .web_scrapter_service import WebScraperService
 from ..models import NodeNote, Project, NodeTopic, Edge, NodeEmbedding
@@ -94,14 +94,14 @@ class NoteService:
         content_type = ContentType.objects.get_for_model(NodeNote)
 
         related_notes_tupels = Edge.get_n_nearest_nodes(note, content_type, limit)
-
-        print(f"related_notes_tupels: {related_notes_tupels}")
-
         note_ids = [tupel[0] for tupel in related_notes_tupels]
 
-        related_notes = NodeNote.objects.filter(id__in=note_ids).all()
+        # Use Case and When to preserve the order of the note_ids
+        preserved_order = Case(
+            *[When(id=note_id, then=pos) for pos, note_id in enumerate(note_ids)]
+        )
 
-        print(f"related_notes: {related_notes}")
+        related_notes = NodeNote.objects.filter(id__in=note_ids).order_by(preserved_order)
 
         return related_notes
 

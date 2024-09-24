@@ -38,7 +38,7 @@ class NoteDetailRelatedView(TemplateView):
             current_note = NodeNote.objects.get(uuid=note_uuid)
 
         if not current_note is None:
-            related_notes = NoteService().related_notes(current_note, 4)
+            related_notes = NoteService().related_notes(current_note, 10)
 
             context['current_note'] = current_note
             context['related_notes'] = related_notes

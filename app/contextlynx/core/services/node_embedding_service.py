@@ -56,18 +56,20 @@ class NodeEmbeddingService:
 
             print("Node embeddings recalculated")
 
-        # self.calculate_predicted_edges(project)
+        self.calculate_predicted_edges_for_notes(project)
 
-    def calculate_predicted_edges(self, project):
+    def calculate_predicted_edges_for_notes(self, project):
         with transaction.atomic():
             model = self._get_model(project)
 
+            # delete all predicted edges
+            Edge.objects.filter(project=project, predicted=True).delete()
+
             note_nodes = NodeNote.objects.filter(project=project).all()
-            topic_nodes = NodeTopic.objects.filter(project=project).all()
-            nodes = list(note_nodes) + list(topic_nodes)
+            nodes = list(note_nodes)
 
             for node in nodes:
-                similar_nodes = self.predict_edges(project, node, 0.95)
+                similar_nodes = self.predict_edges(project, node, 0.98)
                 for similar_node in similar_nodes:
                     similarity = model.wv.similarity(str(node.id), str(similar_node.id))
                     print(f"Predicted edge between {node.id} and {similar_node.id} with similarity {similarity}")
