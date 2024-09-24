@@ -3,6 +3,7 @@ import json
 from bs4 import BeautifulSoup
 from youtube_transcript_api import YouTubeTranscriptApi, NoTranscriptFound
 from youtube_transcript_api._errors import TranscriptsDisabled, NoTranscriptAvailable
+from pytube import YouTube
 
 class WebScraperService:
     _instance = None
@@ -57,11 +58,35 @@ class WebScraperService:
             print(f"An error occurred while fetching the transcript: {e}")
             return None
 
+    def get_youtube_meta(self, video_id):
+        yt = YouTube(f"https://www.youtube.com/watch?v={video_id}")
+        metadata = {
+            'title': yt.title,
+            'author': yt.author,
+            'publish_date': yt.publish_date.strftime('%Y-%m-%d'),
+            'views': yt.views,
+            'length': yt.length,
+            'description': yt.description,
+            'thumbnail_url': yt.thumbnail_url,
+            'rating': yt.rating
+        }
+        return metadata
+
     def get_youtube_transcript_sanitized(self, video_id):
         transcript = self.get_youtube_transcript(video_id)
+        meta = self.get_youtube_meta(video_id)
 
         if transcript is not None:
-            data = ""
+            data = f"""
+# YouTube Video Transcript  
+Title: {meta['title']}
+Author: {meta['author']}
+Publish Date: {meta['publish_date']}
+Description: {meta['description']}
+
+# Transcript
+"""
+
             for entry in transcript:
                 data += entry['text'] + " "
             return data

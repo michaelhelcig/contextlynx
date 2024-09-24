@@ -35,7 +35,7 @@ class NodeEmbeddingService:
             nodes = list(note_nodes) + list(topic_nodes)
             for node in nodes:
                 if str(node.id) not in model.wv.index_to_key:
-                    node_embedding = [0] * 32
+                    node_embedding = [0] * 16
                 else:
                     node_embedding = model.wv[str(node.id)]
                 self._update_node_embedding(node, node_embedding)
@@ -100,14 +100,14 @@ class NodeEmbeddingService:
                     g,
                     dimensions=16,
                     walk_length=10,
-                    num_walks=30,
+                    num_walks=20,
                     p=2,  # Return parameter
-                    q=0.25,  # In-out parameter
+                    q=1,  # In-out parameter
                     workers=1
                 )
 
                 model = node2vec.fit(
-                    window=5,
+                    window=3,
                     min_count=1,
                     batch_words=4
                 )

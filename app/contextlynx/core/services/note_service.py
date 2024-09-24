@@ -28,8 +28,10 @@ class NoteService:
         with transaction.atomic():
             project = Project.get_or_create_default_project(user)
 
+            data_raw, data_type = self._constitute_data_raw(data_input)
+
             existing_topics_largest = self.topic_service.get_n_largest_topics(project, 10)
-            existing_topics_similar = self.topic_service.search_topics_word_embedding(project, data_input, True, 0, 20)
+            existing_topics_similar = self.topic_service.search_topics_word_embedding(project, data_raw, True, 0, 20)
 
             print(f"existing_topics_largest: {existing_topics_largest}")
             print(f"existing_topics_similar: {existing_topics_similar}")
@@ -38,8 +40,6 @@ class NoteService:
             print(f"existing_topics_similar size: {len(existing_topics_similar)}")
 
             existing_topics = set(existing_topics_largest + existing_topics_similar)
-
-            data_raw, data_type = self._constitute_data_raw(data_input)
 
             data_json = self.nlp_service.generate_topics_and_summary(data_raw, existing_topics)
             topics_json = data_json.get('topics')
@@ -91,31 +91,18 @@ class NoteService:
         return note
 
     def related_notes(self, note, limit: int):
-        project = note.project
         content_type = ContentType.objects.get_for_model(NodeNote)
-        embedding = note.node_embedding
 
-        related_notes = list()
+        related_notes_tupels = Edge.get_n_nearest_nodes(note, content_type, limit)
 
-        if embedding is None:
-            related_topics = NodeNote.related_topics(note)
-            for topic in related_topics:
-                if topic.node_embedding:
-                    embedding = topic.node_embedding
-                    break
+        print(f"related_notes_tupels: {related_notes_tupels}")
 
-        if embedding:
-            note_ids = NodeNote.objects.filter(project=project).exclude(id=note.id).order_by('-created_at').values_list('id', flat=True)
-            embedding_similarity_tupels = NodeEmbedding.get_n_closest_neighbors(project, embedding.embedding_vector, content_type, note_ids, limit)
+        note_ids = [tupel[0] for tupel in related_notes_tupels]
 
-            print(f"embedding_similarity_tupels: {embedding_similarity_tupels}")
+        related_notes = NodeNote.objects.filter(id__in=note_ids).all()
 
-            if embedding_similarity_tupels:
-                embedding_ids = [tupel[0] for tupel in embedding_similarity_tupels]
-                related_notes = NodeNote.for_node_embeddings(embedding_ids)
+        print(f"related_notes: {related_notes}")
 
-
-        related_notes = [n for n in related_notes if n.id != note.id]
         return related_notes
 
     def _constitute_data_raw(self, data_input):

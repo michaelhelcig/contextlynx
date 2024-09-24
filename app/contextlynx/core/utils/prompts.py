@@ -26,7 +26,7 @@ Output JSON Schema:
 {{
   "icon": "string", // EMOJI which fits the content
   "title": "string", // a short title for the provided content
-  "data_sanitized_md": "string", // the entire content provided, but sanitized and in markdown format, do not truncate anything
+  "data_sanitized_md": "string", // format the entire content into a nice markdown format (e.g., bold, italic, code, tables, links, etc.)
   "language": "string", // the language of the content, in the form of a two-letter code (e.g., "en" for English)
   "short_summary": "string", // a short summary of the content under 500 tokens
   "topics": [

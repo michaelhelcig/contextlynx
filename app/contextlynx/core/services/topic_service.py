@@ -104,34 +104,26 @@ class TopicService:
         return self.get_closest_neighbours(word_topics, limit)
 
     def get_closest_neighbours(self, topics, limit=10):
-        embedding_similarity_tupels = list()
-        closest_neighbours = list()
-        content_type = ContentType.objects.get_for_model(NodeTopic)
+        if len(topics) >= limit:
+            return topics
 
-        topic_node_ids = NodeTopic.objects.filter(project=project).values_list('id', flat=True)
-
+        all_related_topic_tupels = list()
         for topic in topics:
-            if not topic.node_embedding:
-                closest_neighbours.append(topic)
-                continue
-            embedding = topic.node_embedding.embedding_vector
-            embedding_similarity_tupels.extend(NodeEmbedding.get_n_closest_neighbors(topic.project, embedding, content_type, topic_node_ids, limit))
+            content_type = ContentType.objects.get_for_model(NodeTopic)
 
-        embedding_similarity_tupels = self._order_embedding_similarity_tupels(embedding_similarity_tupels)
+            related_topic_tupels = Edge.get_n_nearest_nodes(topic, content_type, limit)
+            all_related_topic_tupels.extend(related_topic_tupels)
 
-        if embedding_similarity_tupels:
-            embeddings = [tupel[0] for tupel in embedding_similarity_tupels]
-            for emb in embeddings:
-                if len(closest_neighbours) >= limit:
-                    break
-                topic = NodeTopic.for_node_embedding(emb)
+        all_related_topic_tupels = sorted(all_related_topic_tupels, key=lambda x: x[3], reverse=False)
 
-                if topic:
-                    closest_neighbours.append(topic)
-        else:
-            closest_neighbours = list()
+        # get top limit related topics
+        related_topic_ids = [tupel[0] for tupel in all_related_topic_tupels]
 
-        return closest_neighbours
+        # get first "limit" topic ids
+        related_topic_ids = related_topic_ids[:limit - len(topics)]
+        related_topics = NodeTopic.get_by_ids(related_topic_ids)
+
+        return list(related_topics) + topics
 
     def get_n_largest_topics(self, project, n):
         tupels = Edge.get_n_largest_nodes(project, ContentType.objects.get_for_model(NodeTopic), n)

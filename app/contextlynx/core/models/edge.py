@@ -102,6 +102,108 @@ class Edge(models.Model):
 
             return cursor.fetchall()
 
+    @classmethod
+    def get_n_nearest_nodes(cls, node, content_type, n=10, max_depth=5):
+        """
+        Retrieve up to 'n' nearest nodes of a specified content type from a given node,
+        ensuring all are in the same connected cluster.
+
+        This method uses a breadth-first search on the graph, starting from the node,
+        to find the closest nodes based on depth (edges traversed) and similarity.
+
+        Parameters:
+        - node: Starting node.
+        - content_type: Type of nodes to return.
+        - n: Max number of nodes (default: 10).
+        - max_depth: Max search depth (default: 5).
+
+        Returns:
+        A list of tuples (node_id, content_type_id, similarity, depth) for the nearest nodes.
+        The search ensures only connected nodes are considered, within the depth, avoiding cycles.
+        """
+        start_node_id = node.id
+        content_type_id = content_type.id
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                WITH RECURSIVE connected_nodes AS (
+                    -- Base case: start with the given node
+                    SELECT 
+                        %s::integer AS start_node_id,
+                        %s::integer AS start_content_type_id,
+                        CASE 
+                            WHEN from_object_id = %s AND from_content_type_id = %s THEN to_object_id 
+                            ELSE from_object_id 
+                        END AS node_id,
+                        CASE 
+                            WHEN from_object_id = %s AND from_content_type_id = %s THEN to_content_type_id 
+                            ELSE from_content_type_id 
+                        END AS content_type_id,
+                        similarity,
+                        1 AS depth,
+                        ARRAY[CASE 
+                            WHEN from_object_id = %s AND from_content_type_id = %s THEN to_object_id 
+                            ELSE from_object_id 
+                        END] AS visited_nodes
+                    FROM 
+                        """ + cls._meta.db_table + """
+                    WHERE 
+                        (from_object_id = %s AND from_content_type_id = %s) OR 
+                        (to_object_id = %s AND to_content_type_id = %s)
+                
+                    UNION ALL
+                
+                    -- Recursive case: find connected nodes
+                    SELECT 
+                        cn.start_node_id,
+                        cn.start_content_type_id,
+                        CASE 
+                            WHEN e.from_object_id = cn.node_id AND e.from_content_type_id = cn.content_type_id 
+                            THEN e.to_object_id 
+                            ELSE e.from_object_id 
+                        END AS node_id,
+                        CASE 
+                            WHEN e.from_object_id = cn.node_id AND e.from_content_type_id = cn.content_type_id 
+                            THEN e.to_content_type_id 
+                            ELSE e.from_content_type_id 
+                        END AS content_type_id,
+                        e.similarity,
+                        cn.depth + 1 AS depth,
+                        cn.visited_nodes || CASE 
+                            WHEN e.from_object_id = cn.node_id AND e.from_content_type_id = cn.content_type_id 
+                            THEN e.to_object_id 
+                            ELSE e.from_object_id 
+                        END AS visited_nodes
+                    FROM 
+                        """ + cls._meta.db_table + """ e
+                    INNER JOIN 
+                        connected_nodes cn ON 
+                        ((e.from_object_id = cn.node_id AND e.from_content_type_id = cn.content_type_id) OR 
+                         (e.to_object_id = cn.node_id AND e.to_content_type_id = cn.content_type_id))
+                    WHERE 
+                        cn.depth < %s
+                        AND NOT (CASE 
+                            WHEN e.from_object_id = cn.node_id AND e.from_content_type_id = cn.content_type_id 
+                            THEN e.to_object_id 
+                            ELSE e.from_object_id 
+                        END) = ANY(cn.visited_nodes)
+                )
+                SELECT DISTINCT ON (node_id, content_type_id)
+                    node_id, 
+                    content_type_id, 
+                    similarity, 
+                    depth
+                FROM 
+                    connected_nodes
+                WHERE 
+                    (node_id != start_node_id OR content_type_id != start_content_type_id)
+                    AND content_type_id = %s
+                ORDER BY 
+                    node_id, content_type_id, depth ASC, similarity DESC
+                LIMIT %s
+            """, [start_node_id, content_type_id, start_node_id, content_type_id, start_node_id, content_type_id,
+                  start_node_id, content_type_id, start_node_id, content_type_id, start_node_id, content_type_id,
+                  max_depth, content_type_id, n])
+
             return cursor.fetchall()
 
     def __str__(self):
