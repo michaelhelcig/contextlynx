@@ -47,11 +47,18 @@ class CreateNoteView(View):
         return render(request, self.template_name, context)
 
 @method_decorator(login_required(login_url='/login'), name='dispatch')
-class MyNotesView(ListView):
-    model = NodeNote
+class MyNotesView(TemplateView):
     template_name = 'core/notes_list.html'
-    context_object_name = 'notes'
-    ordering = ['-created_at']
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        project = Project.get_or_create_default_project(user)
+        notes = NodeNote.objects.filter(project=project).order_by('-created_at')
+        context = {
+            'notes': notes
+        }
+        return context
 
 @method_decorator(login_required(login_url='/login'), name='dispatch')
 class NoteDetailRelatedView(TemplateView):
