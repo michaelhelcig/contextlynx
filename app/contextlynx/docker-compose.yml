@@ -12,6 +12,8 @@ services:
       - coredb
     environment:
       - DJANGO_SETTINGS_MODULE=contextlynx.settings
+      - SECRET_KEY=${SECRET_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
       - COREDB_NAME=${COREDB_NAME}
       - COREDB_USER=${COREDB_USER}
       - COREDB_PASSWORD=${COREDB_PASSWORD}

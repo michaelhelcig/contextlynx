@@ -1,13 +1,8 @@
 from pathlib import Path
-import environ
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-# Initialise environment variables
-env = environ.Env()
-environ.Env.read_env(BASE_DIR / '.env')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -15,11 +10,11 @@ environ.Env.read_env(BASE_DIR / '.env')
 # SECURITY WARNING:
 # keep the secret key used in production secret!
 # also keep all other secrets secret!
-SECRET_KEY = env('SECRET_KEY')
-OPENAI_API_KEY = env('OPENAI_API_KEY')
+SECRET_KEY = os.getenv('SECRET_KEY')
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DEBUG', default=False)
+DEBUG = os.getenv('DEBUG', default=False)
 
 ALLOWED_HOSTS = ["*", "localhost"]
 
@@ -77,11 +72,11 @@ WSGI_APPLICATION = 'contextlynx.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env('COREDB_NAME'),
-        'USER': env('COREDB_USER'),
-        'PASSWORD': env('COREDB_PASSWORD'),
-        'HOST': env('COREDB_HOST'),
-        'PORT': env('COREDB_PORT', default='5432'),  # Default PostgreSQL port
+        'NAME': os.getenv('COREDB_NAME'),
+        'USER': os.getenv('COREDB_USER'),
+        'PASSWORD': os.getenv('COREDB_PASSWORD'),
+        'HOST': os.getenv('COREDB_HOST'),
+        'PORT': os.getenv('COREDB_PORT', default='5432'),  # Default PostgreSQL port
     }
 }
 
