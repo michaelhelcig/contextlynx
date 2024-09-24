@@ -10,9 +10,9 @@ urlpatterns = [
     # General views
     path('notes/', views.MyNotesView.as_view(), name='notes'),
     path('knowledge/', views.GraphView.as_view(), name='knowledge'),
-    path('notes/<uuid:slug>/related/', views.NoteDetailRelatedView.as_view(), name='notes_detail_related'),
+    path('notes/<uuid:slug>/related/', views.NoteDetailRelatedView, name='notes_detail_related'),
 
-    path('notes/latest/related/', views.NoteDetailRelatedView.as_view(), name='notes_detail_related_latest'),
+    path('notes/latest/related/', views.NoteDetailRelatedView, name='notes_detail_related_latest'),
 
     # API endpoints
     path('api/notes/', note_api.note, name='new_note'),

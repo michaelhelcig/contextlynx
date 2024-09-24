@@ -9,7 +9,7 @@ from .background_worker_service import BackgroundWorkerService
 from .topic_service import TopicService
 from .nlp_service import NlpService
 from ..models.node_note import NoteDataType
-from ..utils.regex_utils import is_url, is_youtube_url, get_youtube_id_from_url
+from ..utils.regex_utils import is_url, is_youtube_url, get_youtube_id_from_url, get_urls
 from django.db import transaction
 
 
@@ -107,20 +107,30 @@ class NoteService:
 
     def _constitute_data_raw(self, data_input):
         data_input = data_input.strip()
-        data_raw = data_input
+        data_raw = data_input  # Initialize data_raw with data_input
 
-        data_type = self.determine_note_data_type(data_input)
+        # Extract all URLs from the data_input
+        urls = get_urls(data_input)
 
-        if data_type == NoteDataType.WEBPAGE:
-            if is_youtube_url(data_input):
-                video_id = get_youtube_id_from_url(data_input)
-                data_raw = self.web_scraper_service.get_youtube_transcript_sanitized(video_id)
-                # add link to the data_raw at top as comment
-                data_raw = f"# {data_input}\n{data_raw}"
+        print(urls)
+    
+        # Iterate over each URL found in data_input
+        for url in urls:
+            # Add URL as a comment to data_raw
+            data_raw = f"# {url}\n{data_raw}"
+
+            # Retrieve content from the URL and append it to data_raw
+            if is_youtube_url(url):
+                video_id = get_youtube_id_from_url(url)
+                content = self.web_scraper_service.get_youtube_transcript_sanitized(video_id)
             else:
-                data_raw, data_raw_html = self.web_scraper_service.get_page(data_input)
-                # add link to the data_raw at top as comment
-                data_raw = f"# {data_input}\n{data_raw}"
+                content, _ = self.web_scraper_service.get_page(url)
+
+            # Append the content to data_raw
+            data_raw += f"\n{content}"  # Add a newline before appending content
+
+        # Determine the data type of the original data_input
+        data_type = self.determine_note_data_type(data_input)
 
         return data_raw, data_type
 

@@ -17,7 +17,7 @@ services:
       - COREDB_PASSWORD=${COREDB_PASSWORD}
       - COREDB_HOST=coredb
       - DEBUG=True
-      - ENVIRONMENT=development
+      - ENVIRONMENT=production
     env_file:
       - .env
 

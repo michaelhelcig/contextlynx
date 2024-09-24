@@ -11,6 +11,25 @@ def is_url(text):
     )
     return re.match(url_regex, text) is not None
 
+def contains_urls(text):
+    # Split the text into words and check if any is a URL
+    words = text.split()
+    return any(is_url(word) for word in words)
+
+
+def get_urls(text):
+    # Improved regex to find all URLs in the input text
+    url_regex = re.compile(
+        r'https?://'  # Protocol
+        r'(?:(?:[a-zA-Z0-9\-]+\.)+[a-zA-Z]{2,6}|localhost|127\.0\.0\.1)'  # Domain name or localhost
+        r'(:\d+)?'  # Optional port
+        r'(\/[^\s]*)?'  # Path
+    )
+
+    # Find all matches and return them as a flat list of strings
+    return [match.group(0) for match in url_regex.finditer(text)]
+
+
 def is_youtube_url(url):
     # Regular expression for validating a YouTube URL
     youtube_url_regex = re.compile(

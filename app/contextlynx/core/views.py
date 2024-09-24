@@ -7,11 +7,15 @@ from .models import NodeTopic, NodeNote, Edge, Project
 from .services import NoteService
 from .services.background_worker_service import BackgroundWorkerService
 import random
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 
+login_required(login_url='/login')
 def error_404(request, exception=None):
     return redirect('/create')
 
 
+login_required(login_url='/login')
 def create_note(request):
     user = request.user
     username = user.username.capitalize()
@@ -37,15 +41,15 @@ def create_note(request):
 
     return render(request, 'core/create_note.html', context)
 
+@method_decorator(login_required(login_url='/login'), name='dispatch')
 class MyNotesView(ListView):
     model = NodeNote
     template_name = 'core/notes_list.html'
     context_object_name = 'notes'
     ordering = ['-created_at']
 
-
+@method_decorator(login_required(login_url='/login'), name='dispatch')
 class NoteDetailRelatedView(TemplateView):
-    model = NodeNote
     template_name = 'core/notes_detail_related.html'
     context_object_name = 'current_note'
 
@@ -60,7 +64,7 @@ class NoteDetailRelatedView(TemplateView):
         else:
             current_note = NodeNote.objects.get(uuid=note_uuid)
 
-        if not current_note is None:
+        if current_note is not None:
             related_notes = NoteService().related_notes(current_note, 10)
 
             context['current_note'] = current_note
@@ -69,6 +73,7 @@ class NoteDetailRelatedView(TemplateView):
         return context
 
 
+@method_decorator(login_required(login_url='/login'), name='dispatch')
 class GraphView(TemplateView):
     template_name = 'core/knowledge.html'
 
