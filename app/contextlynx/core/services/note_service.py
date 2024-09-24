@@ -76,10 +76,9 @@ class NoteService:
             for topic_json in topics_json:
                 topic_title = topic_json.get('title')
                 topic_data_type = topic_json.get('data_type')
-
-                print(f"topic_title: {topic_title}, topic_data_type: {topic_data_type}")
+                
                 topic, created = self.topic_service.ensure_topic(project, topic_title, language, topic_data_type)
-                print(f"topic: {topic}, created: {created}")
+                print(f"topic: {topic}, topic_data_type: {topic_data_type}, created: {created}")
 
                 self._create_edge_for_topic(project, note, topic)
                 topics.add(topic)

@@ -49,11 +49,6 @@ class TopicService:
     def ensure_edges_for_topics(self, topics):
         # iterate over all topics and check if there is an edge between them
         for i, topic1 in enumerate(topics):
-            topics_searched = self.search_topics_word_embedding(topic1.project, topic1.title, threshold=0.95)
-
-            for topic2 in topics_searched:
-                self.ensure_edge_for_topic_pair(topic1, topic2, True)
-
             for j, topic2 in enumerate(topics):
                 if i != j:
                     self.ensure_edge_for_topic_pair(topic1, topic2)

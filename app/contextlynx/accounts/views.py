@@ -32,6 +32,9 @@ def login_view(request):
             user = form.get_user()
             login(request, user)
             return redirect('create_note')  # Redirect to home page after login
+        else:
+            messages.error(request, 'Invalid username or password.')
     else:
         form = AuthenticationForm()
+    
     return render(request, 'accounts/login.html', {'form': form})
