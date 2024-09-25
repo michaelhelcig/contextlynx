@@ -16,7 +16,7 @@
             <div class="picker-container absolute top-2 right-2" data-index="{{ counter }}">
                 <button class="picker-option active" onclick="showContent(this, 'short')">Short</button>
                 <button class="picker-option" onclick="showContent(this, 'full')">Full</button>
-                <button class="picker-option" onclick="showContent(this, 'original')">Original</button>
+                <!-- <button class="picker-option" onclick="showContent(this, 'original')">Original</button> -->
                 <button class="picker-option" onclick="showContent(this, 'input')">Input</button>
             </div>
 
@@ -37,10 +37,11 @@
                 {{ note.data_sanitized_md|markdown_to_html|safe }}
             </div>
 
-            <!-- Ensure the "Original" content does not overflow the markdown window -->
+            <!-- Ensure the "Original" content does not overflow the markdown window
             <div id="note-content-original-{{ counter }}" class="note-content hidden">
                 <pre class="bg-gray-100 p-4 rounded overflow-x-auto break-all whitespace-pre-wrap">{{ note.data_raw }}</pre>
             </div>
+             -->
 
             <!-- Ensure the "Input" content does not overflow the markdown window too -->
             <div id="note-content-input-{{ counter }}" class="note-content hidden">

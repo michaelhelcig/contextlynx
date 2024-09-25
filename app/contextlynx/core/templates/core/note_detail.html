@@ -52,7 +52,7 @@
     <div class="picker-container mb-4 flex justify-center">
         <button class="picker-option active" onclick="showContent(this, 'short')">Short</button>
         <button class="picker-option" onclick="showContent(this, 'full')">Full</button>
-        <button class="picker-option" onclick="showContent(this, 'original')">Original</button>
+        <!-- <button class="picker-option" onclick="showContent(this, 'original')">Original</button> -->
         <button class="picker-option" onclick="showContent(this, 'input')">Input</button>
     </div>
 
@@ -73,11 +73,12 @@
         <div id="note-detail-content-full" class="note-detail-content hidden">
             {{ note.data_sanitized_md|markdown_to_html|safe }}
         </div>
-
-        <!-- Original View (Hidden by default) -->
+        
+        <!-- Original View (Hidden by default)
         <div id="note-detail-content-original" class="note-detail-content hidden">
             <pre class="bg-gray-100 p-4 rounded overflow-x-auto break-all whitespace-pre-wrap">{{ note.data_raw }}</pre>
         </div>
+        -->
 
         <!-- Input View (Hidden by default) -->
         <div id="note-detail-content-input" class="note-detail-content hidden">
