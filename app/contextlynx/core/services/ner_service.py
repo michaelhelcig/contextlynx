@@ -1,6 +1,6 @@
 import spacy
 from ..models import NodeTopicType
-
+import re
 
 class NERService:
     _instance = None
@@ -25,6 +25,8 @@ class NERService:
         # Step 1: Collect all entities
         for ent in doc.ents:
             data_type = NERService._map_entity(ent.label_)
+
+            text = self._get_without_start_the(text)
 
             if data_type in [NodeTopicType.PERSON, NodeTopicType.ORGANIZATION, NodeTopicType.LOCATION]:
                 text = self._get_without_apostrophe(ent.text)
@@ -78,13 +80,15 @@ class NERService:
     def _get_lemma(ent):
         """Extract the lemmatized form of an entity"""
         return ' '.join([token.lemma_ for token in ent])
+    
+    @staticmethod
+    def _get_without_start_the(text):
+        return re.sub(r"^the ", "", text)
 
     @staticmethod
     def _get_without_apostrophe(text):
-        # Remove apostrophes from named entities
-        if text.endswith("'s"):
-            text = text[:-2]
-        return text
+        # Regex pattern to match variations of 's with different types of apostrophes
+        return re.sub(r"(\w+)[’'s]$", r"\1", text)
 
     @staticmethod
     def _map_entity(ent_type):

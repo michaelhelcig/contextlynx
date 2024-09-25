@@ -60,15 +60,17 @@ class WebScraperService:
 
     def get_youtube_meta(self, video_id):
         yt = YouTube(f"https://www.youtube.com/watch?v={video_id}")
+        
         metadata = {
-            'title': yt['title'],
-            'author': yt['author'],
-            'views': yt['views'],
-            'length': yt['length'],
-            'publish_date': yt['publish_date'],
-            'description': yt['description'],
-            'thumbnail_url': yt['thumbnail_url']
+            'title': getattr(yt, 'title', None),
+            'author': getattr(yt, 'author', None),
+            'views': getattr(yt, 'views', None),
+            'length': getattr(yt, 'length', None),
+            'publish_date': getattr(yt, 'publish_date', None),
+            'description': getattr(yt, 'description', None),
+            'thumbnail_url': getattr(yt, 'thumbnail_url', None)
         }
+
         return metadata
 
     def get_youtube_transcript_sanitized(self, video_id):
