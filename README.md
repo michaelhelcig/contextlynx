@@ -11,7 +11,7 @@
 - **Supported Inputs**:
   - **Plain Text**: Write or import plain text notes.
   - **Web Links**: Automatically scrape and extract content from websites to capture information.
-  - **YouTube Links**: Extract transcripts from YouTube videos to integrate their content into your knowledge graph.
+  - **YouTube Links**: Extract transcripts from YouTube videos to integrate their content into your knowledge graph. For the scope of the project, integrating a paid API for reliable transcript access was not included; in the worst case, only the link to the YouTube video will be added as a note.
 
 - **Machine Learning Predictions**: Using node and graph embeddings (via **Node2Vec**), the app predicts which notes are likely to be connected based on the content.
 

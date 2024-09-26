@@ -24,14 +24,14 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
 
+# Download python models
+RUN python -m spacy download en_core_web_lg
+
 # Copy the project code into the /app directory
 COPY . .
 
 # Make sure the user can write to some necessary files
 RUN mkdir -p =staticfiles media
-
-# Download python models
-RUN python -m spacy download en_core_web_lg
 
 # Expose the port where the app will be running (Nginx)
 EXPOSE 80
