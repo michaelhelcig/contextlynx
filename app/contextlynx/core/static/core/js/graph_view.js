@@ -210,6 +210,3 @@ window.renderKnowledgeGraph = function(data) {
 
     console.log("Knowledge graph rendered with", data.nodes.length, "nodes and", data.links.length, "links");
 };
-
-// Initial render
-window.renderKnowledgeGraph(data);

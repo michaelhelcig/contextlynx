@@ -26,11 +26,11 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          tag="$(echo "${{ github.ref_name }}" | xargs | tr -c '[:alnum:]' '-')"
+          tag="$(echo "${{ github.ref_name }}" | xargs | tr -c '[:alnum:]' '-')latest"
           cd app/contextlynx
-          docker build -t ghcr.io/${{ github.repository }}/contextlynx:$tag-latest .
+          docker build -t ghcr.io/${{ github.repository }}/contextlynx:$tag .
 
       - name: Push Docker Image
         run: |
-          tag="$(echo "${{ github.ref_name }}" | xargs | tr -c '[:alnum:]' '-')"
-          docker push ghcr.io/${{ github.repository }}/contextlynx:$tag-latest
+          tag="$(echo "${{ github.ref_name }}" | xargs | tr -c '[:alnum:]' '-')latest"
+          docker push ghcr.io/${{ github.repository }}/contextlynx:$tag

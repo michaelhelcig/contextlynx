@@ -4,7 +4,7 @@
 {% block content %}
 <div class="notes-container mx-auto mt-32"> <!-- Centered container with margin top to adjust for fixed header -->
     <div class="p-6 bg-white rounded-lg shadow-md">
-        <h2 class="text-2xl font-bold mb-4">📒 Notes</h2>
+        <h2 class="text-2xl font-bold mb-4">📁 Notes</h2>
         <ul>
             {% for note in notes %}
                 {% include 'core/note_item.html' with note=note counter=forloop.counter %}

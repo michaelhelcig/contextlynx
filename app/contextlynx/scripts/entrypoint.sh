@@ -1,7 +1,5 @@
 #!/bin/bash
 
-python -m spacy download en_core_web_lg
-
 if [ "$ENVIRONMENT" == "development" ]; then
   bash /app/scripts/entrypoint-development.sh
   exit
@@ -19,7 +17,6 @@ python manage.py migrate --noinput
 # Collect static files
 python manage.py collectstatic --noinput
 
-
 # Check if NUM_WORKERS is already set
 if [ -z "${NUM_WORKERS}" ]; then
   # If not set, calculate the number of workers
@@ -27,6 +24,14 @@ if [ -z "${NUM_WORKERS}" ]; then
 fi
 
 # Run the application with the calculated number of workers
-exec gunicorn --timeout 300 --workers $NUM_WORKERS --bind 0.0.0.0:8000 contextlynx.wsgi:application
+echo "Starting Gunicorn"
+exec gunicorn contextlynx.wsgi:application \
+    --bind 0.0.0.0:8000 \
+    --workers $NUM_WORKERS \
+    --log-level=info \
+    --access-logfile '-' \
+    --error-logfile '-' &
 
-
+# Start Nginx in the foreground
+echo "Starting Nginx"
+nginx -g 'daemon off;'
