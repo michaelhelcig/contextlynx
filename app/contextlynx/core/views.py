@@ -24,6 +24,7 @@ class CreateNoteView(View):
     def get(self, request):
         user = request.user
         username = user.username.capitalize()
+        project=Project.get_or_create_default_project(user)
 
         welcome_messages = [
             f"Hi, {username}! What insights would you like to jot down today?",
@@ -41,7 +42,8 @@ class CreateNoteView(View):
         selected_message = random.choice(welcome_messages)
 
         context = {
-            'welcome_message': selected_message
+            'welcome_message': selected_message,
+            'project': project
         }
 
         return render(request, self.template_name, context)

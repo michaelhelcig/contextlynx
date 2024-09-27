@@ -6,10 +6,15 @@
         {% csrf_token %}
         <div class="flex items-end">
             <!-- Chat bubble (textarea) with placeholder text -->
-            <textarea id="data_input" name="data_input" rows="1" class="flex-grow px-4 py-3 mr-2 border rounded-lg shadow-lg resize-none overflow-hidden" placeholder="{{ welcome_message }}"></textarea>
+            <textarea id="data_input" name="data_input" rows="1" 
+                class="flex-grow px-4 py-3 mr-2 border rounded-lg shadow-lg resize-none overflow-hidden" 
+                placeholder="{{ welcome_message }}"
+                {% if project.read_only %}disabled{% endif %}></textarea>
 
             <!-- Round button with arrow up next to the chat bubble -->
-            <button id="submit-button" type="submit" class="bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center hover:bg-blue-700 shadow-lg">
+            <button id="submit-button" type="submit" 
+                class="bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center hover:bg-blue-700 shadow-lg"
+                {% if project.read_only %}disabled{% endif %}>
                 <span id="button-content">&#x2191;</span>
             </button>
         </div>
@@ -36,19 +41,22 @@ document.addEventListener('DOMContentLoaded', function() {
         button.disabled = true;
     }
 
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        showLoadingSpinner();
-        this.submit();
-    });
-
-    textarea.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
+    // Prevent submission if the form is disabled
+    if (!textarea.disabled && !button.disabled) {
+        form.addEventListener('submit', function(e) {
             e.preventDefault();
             showLoadingSpinner();
-            form.submit();
-        }
-    });
+            this.submit();
+        });
+
+        textarea.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                showLoadingSpinner();
+                form.submit();
+            }
+        });
+    }
 
     // Function to adjust textarea height
     function adjustTextareaHeight() {

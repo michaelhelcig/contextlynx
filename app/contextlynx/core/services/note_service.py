@@ -28,6 +28,9 @@ class NoteService:
         with transaction.atomic():
             project = Project.get_or_create_default_project(user)
 
+            if project.read_only:
+                raise Exception("Project is read-only")
+
             data_raw, data_type = self._constitute_data_raw(data_input)
 
             existing_topics_largest = self.topic_service.get_n_largest_topics(project, 10)

@@ -11,6 +11,7 @@ class Project(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(null=True)
     latest_node_embedding_calculated = models.BooleanField(default=False)
+    read_only = models.BooleanField(default=False)
 
 
     @staticmethod
