@@ -38,11 +38,18 @@ window.renderKnowledgeGraph = function(data) {
     // Create a group for the graph elements
     const g = svg.append("g");
 
+    // Calculate node radii
+    data.nodes.forEach(node => {
+        node.radius = calculateRadius(node);
+    });
+
     const simulation = d3.forceSimulation(data.nodes)
         .force("link", d3.forceLink(data.links).id(d => d.id).distance(d => 400 * (1 - d.similarity)))
-        .force("charge", d3.forceManyBody().strength(-800))
+        .force("charge", d3.forceManyBody().strength(-1000))
         .force("center", d3.forceCenter(width / 2, height / 2))
-        .force("collision", d3.forceCollide().radius(d => d.radius + 15));
+        .force("collision", d3.forceCollide().radius(d => d.radius + 20).strength(1))
+        .force("x", d3.forceX(width / 2).strength(0.1))
+        .force("y", d3.forceY(height / 2).strength(0.1));
 
     const gradientToColor = (targetColor) => {
         return d3.scaleLinear()
@@ -62,15 +69,13 @@ window.renderKnowledgeGraph = function(data) {
         .selectAll("g")
         .data(data.nodes)
         .join("g")
-        // Attach drag functionality
         .call(drag(simulation));
 
     // Add event listener for click on NodeNote type
     node.on("click", (event, d) => {
-        if (d.type === "NodeNote") {
-            const url = `/notes/${d.uuid}/related`;
-            window.location.href = url;
-        }
+        console.log("Clicked on node", d);
+        const url = `/notes/${d.uuid}/related`;
+        window.location.href = url;
     });
 
     function calculateRadius(d) {
@@ -84,10 +89,7 @@ window.renderKnowledgeGraph = function(data) {
     }
 
     const circles = node.append("circle")
-        .attr("r", d => {
-            d.radius = calculateRadius(d);
-            return d.radius;
-        })
+        .attr("r", d => d.radius)
         .attr("fill", d => d.color);
 
     function fitTextInCircle(text, radius, fontSize) {

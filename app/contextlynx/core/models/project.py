@@ -12,7 +12,7 @@ class Project(models.Model):
     description = models.TextField(null=True)
     latest_node_embedding_calculated = models.BooleanField(default=False)
     read_only = models.BooleanField(default=False)
-
+    prediction_similarity_threshold = models.FloatField(default=0.99)
 
     @staticmethod
     def get_or_create_default_project(user):

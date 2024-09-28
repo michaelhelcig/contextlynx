@@ -103,7 +103,7 @@ class Edge(models.Model):
             return cursor.fetchall()
 
     @classmethod
-    def get_n_nearest_nodes(cls, nodes, content_type, n=10, max_depth=5):
+    def get_n_nearest_nodes(cls, nodes, target_content_type, n=10, max_depth=5):
         """
         Retrieve up to 'n' nearest nodes of a specified content type from a list or a single node,
         ensuring all are in the same connected cluster.
@@ -113,7 +113,7 @@ class Edge(models.Model):
 
         Parameters:
         - nodes: A list of starting nodes or a single node.
-        - content_type: Type of nodes to return.
+        - target_content_type: Type of nodes to return.
         - n: Max number of nodes (default: 10).
         - max_depth: Max search depth (default: 5).
 
@@ -125,9 +125,14 @@ class Edge(models.Model):
         if not isinstance(nodes, list):
             nodes = [nodes]
 
-        # Extract ids from the list of nodes
-        start_node_ids = [node.id for node in nodes]
-        content_type_id = content_type.id
+        # Extract ids and content types from the list of nodes
+        start_node_ids = []
+        start_content_type_ids = []
+        for node in nodes:
+            start_node_ids.append(node.id)
+            start_content_type_ids.append(node.get_content_type().id)
+
+        target_content_type_id = target_content_type.id
 
         with connection.cursor() as cursor:
             cursor.execute("""
@@ -135,27 +140,27 @@ class Edge(models.Model):
                     -- Base case: start with the given list of nodes
                     SELECT 
                         start_node_id,
-                        %s::integer AS start_content_type_id,
+                        start_content_type_id,
                         CASE 
-                            WHEN from_object_id = start_node_id AND from_content_type_id = %s THEN to_object_id 
+                            WHEN from_object_id = start_node_id AND from_content_type_id = start_content_type_id THEN to_object_id 
                             ELSE from_object_id 
                         END AS node_id,
                         CASE 
-                            WHEN from_object_id = start_node_id AND from_content_type_id = %s THEN to_content_type_id 
+                            WHEN from_object_id = start_node_id AND from_content_type_id = start_content_type_id THEN to_content_type_id 
                             ELSE from_content_type_id 
                         END AS content_type_id,
                         similarity,
                         1 AS depth,
                         ARRAY[CASE 
-                            WHEN from_object_id = start_node_id AND from_content_type_id = %s THEN to_object_id 
+                            WHEN from_object_id = start_node_id AND from_content_type_id = start_content_type_id THEN to_object_id 
                             ELSE from_object_id 
                         END] AS visited_nodes
                     FROM 
                         """ + cls._meta.db_table + """
-                    CROSS JOIN UNNEST(%s::integer[]) AS start_node_id
+                    CROSS JOIN UNNEST(%s::integer[], %s::integer[]) AS t(start_node_id, start_content_type_id)
                     WHERE 
-                        (from_object_id = start_node_id AND from_content_type_id = %s) OR 
-                        (to_object_id = start_node_id AND to_content_type_id = %s)
+                        (from_object_id = start_node_id AND from_content_type_id = start_content_type_id) OR 
+                        (to_object_id = start_node_id AND to_content_type_id = start_content_type_id)
                     
                     UNION ALL
                     
@@ -202,19 +207,17 @@ class Edge(models.Model):
                 FROM 
                     connected_nodes
                 WHERE 
-                    (node_id != start_node_id OR content_type_id != start_content_type_id)
-                    AND content_type_id = %s
+                    content_type_id = %s
                 ORDER BY 
                     node_id ASC, 
                     content_type_id ASC, 
                     depth ASC, 
                     similarity DESC
                 LIMIT %s
-            """, [content_type_id, content_type_id, content_type_id, content_type_id,
-                start_node_ids, content_type_id, content_type_id, max_depth, content_type_id, n])
+            """, [start_node_ids, start_content_type_ids, max_depth, target_content_type_id, n])
 
-            tupels = cursor.fetchall()
-            return sorted(tupels, key=lambda x: x[3], reverse=False)
+            tuples = cursor.fetchall()
+            return sorted(tuples, key=lambda x: x[3], reverse=False)
 
     def __str__(self):
         return f"{self.from_node} -> {self.to_node} ({self.similarity})"

@@ -92,10 +92,10 @@ class NoteService:
 
         return note
 
-    def related_notes(self, note, limit: int):
+    def related_notes(self, node, limit: int):
         content_type = ContentType.objects.get_for_model(NodeNote)
 
-        related_notes_tupels = Edge.get_n_nearest_nodes(note, content_type, limit)
+        related_notes_tupels = Edge.get_n_nearest_nodes(node, content_type, limit)
         note_ids = [tupel[0] for tupel in related_notes_tupels]
 
         # Use Case and When to preserve the order of the note_ids

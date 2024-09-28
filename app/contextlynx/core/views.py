@@ -71,15 +71,28 @@ class NoteDetailRelatedView(TemplateView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         project = Project.get_or_create_default_project(user)
-        note_uuid = self.kwargs.get('slug')
+        node_uuid = self.kwargs.get('slug')
 
-        if note_uuid is None or note_uuid == 'latest':
-            current_note = NodeNote.objects.filter(project=project).order_by('-created_at').first()
+        current_note = None
+
+        if node_uuid is None or node_uuid == 'latest':
+            node = NodeNote.objects.filter(project=project).order_by('-created_at').first()
+            current_note = node
         else:
-            current_note = NodeNote.objects.get(uuid=note_uuid)
+            node = NodeNote.objects.filter(uuid=node_uuid).first()
 
-        if current_note is not None:
-            related_notes = NoteService().related_notes(current_note, 10)
+            if node is None:
+                node = NodeTopic.objects.filter(uuid=node_uuid).first()
+            else:
+                current_note = node
+
+
+        if node is not None:
+            related_notes = NoteService().related_notes(node, 10)
+            
+            if current_note is None and len(related_notes) > 0:
+                current_note = related_notes[0]
+                related_notes = related_notes[1:]
 
             context['current_note'] = current_note
             context['related_notes'] = related_notes
