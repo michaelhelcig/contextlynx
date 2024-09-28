@@ -92,7 +92,8 @@ class NoteDetailRelatedView(TemplateView):
             
             if current_note is None and len(related_notes) > 0:
                 current_note = related_notes[0]
-                related_notes = related_notes[1:]
+
+            related_notes = [note for note in related_notes if note.id != current_note.id]
 
             context['current_note'] = current_note
             context['related_notes'] = related_notes
