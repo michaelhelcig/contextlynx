@@ -38,3 +38,8 @@ def login_view(request):
         form = AuthenticationForm()
     
     return render(request, 'accounts/login.html', {'form': form})
+
+def login_demo_view(request):
+    demo_user = User.objects.get(username='demo')
+    login(request, demo_user)
+    return redirect('knowledge')
