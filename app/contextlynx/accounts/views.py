@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
@@ -43,3 +43,7 @@ def login_demo_view(request):
     demo_user = User.objects.get(username='demo')
     login(request, demo_user)
     return redirect('knowledge')
+
+def logout_view(request):
+    logout(request)
+    return redirect('onboarding')

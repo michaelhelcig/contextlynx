@@ -5,11 +5,20 @@
     <form id="note-form" method="POST" action="{% url 'new_note' %}" class="relative w-full max-w-4xl mx-auto">
         {% csrf_token %}
         <div class="flex items-end">
-            <!-- Chat bubble (textarea) with placeholder text -->
-            <textarea id="data_input" name="data_input" rows="1" 
-                class="flex-grow px-4 py-3 mr-2 border rounded-lg shadow-lg resize-none overflow-hidden" 
-                placeholder="{{ welcome_message }}"
-                {% if project.read_only %}disabled{% endif %}></textarea>
+            <div class="flex-grow mr-2 text-center">
+                <!-- If project is read-only, show signup message centered -->
+                {% if project.read_only %}
+                    <p class="mb-2">
+                        <a href="/signup" class="text-blue-600 font-bold hover:underline">Signup</a> to add your own knowledge!
+                    </p>
+                {% endif %}
+                
+                <!-- Chat bubble (textarea) with placeholder text -->
+                <textarea id="data_input" name="data_input" rows="1" 
+                    class="w-full px-4 py-3 border rounded-lg shadow-lg resize-none overflow-hidden" 
+                    placeholder="{{ welcome_message }}"
+                    {% if project.read_only %}disabled{% endif %}></textarea>
+            </div>
 
             <!-- Round button with arrow up next to the chat bubble -->
             <button id="submit-button" type="submit" 
@@ -70,8 +79,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize the textarea height
     adjustTextareaHeight();
 
-    // Automatically focus the textarea when the page loads
-    textarea.focus();
+    // Automatically focus the textarea when the page loads if not read-only
+    if (!textarea.disabled) {
+        textarea.focus();
+    }
 });
 </script>
 

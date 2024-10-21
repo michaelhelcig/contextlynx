@@ -39,7 +39,10 @@ class CreateNoteView(View):
             f"What’s up, {username}? Ready to start documenting your ideas?"
         ]
 
-        selected_message = random.choice(welcome_messages)
+        if project.read_only:
+            selected_message = "This project is read-only. You can't add new notes."
+        else:
+            selected_message = random.choice(welcome_messages)
 
         context = {
             'welcome_message': selected_message,
