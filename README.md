@@ -2,20 +2,41 @@
 
 **ContextLynx** is a next-generation **Personal Knowledge Management (PKM)** tool designed to eliminate the need for manual categorization or tagging of notes. By leveraging advanced natural language processing techniques, ContextLynx organizes and connects your notes seamlessly through a dynamic knowledge graph. The application automatically detects relationships between your ideas, notes, and research topics, making your knowledge organization smarter and more intuitive. You can try out the service at [contextlynx.com/get-started](http://contextlynx.com/get-started).
 
-## Features
+## Prototype Features
+
+
+- **Knowledge Graph**, with "real edges" represented in black and predicted edges in red. It is possible to click on any node to see related notes. Visualize your notes and their relationships in a knowledge graph, helping you explore topics holistically.
+
+
+![Graph Overview with all Topics, Notes, and (predicted) Edges](doc/assets/overviewofkg.png)  
+
 
 - **Semantic Note Taking**: Automatically detects connections between your notes using local models for Named Entity Recognition (NER) and word embeddings, alongside powerful large language models (LLMs) accessed via APIs.
-  
-- **Knowledge Graph**: Visualize your notes and their relationships in a knowledge graph, helping you explore topics holistically.
+
+- **Machine Learning Predictions**: Using node and graph embeddings (via **Node2Vec**), the app predicts which notes are likely to be connected based on the content.
+
+
+
+- **Displaying related notes** to each note using the graph structure and KG Embeddings to predict edges. Notes predicted to be highly similar are directly connected through a virtual/predicted edge.  
+
+![Related Notes Overview using the Related Nodes Query](doc/assets/relatednotes.png)  
+
+
+- **Adding notes and information in a ChatGPT-like manner** or like a "saved messages thread" with automatic context linking (Context Lynx = Context Link). 
+
+
+![Create Notes in a ChatGPT-like manner](doc/assets/createnotes.png)  
 
 - **Supported Inputs**:
   - **Plain Text**: Write or import plain text notes.
   - **Web Links**: Automatically scrape and extract content from websites to capture information.
   - **YouTube Links**: Extract transcripts from YouTube videos to integrate their content into your knowledge graph. For the scope of the project, integrating a paid API for reliable transcript access was not included; in the worst case, only the link to the YouTube video will be added as a note.
 
-- **Machine Learning Predictions**: Using node and graph embeddings (via **Node2Vec**), the app predicts which notes are likely to be connected based on the content.
+- **Showing all notes ordered by creation date.**  
 
-- **LLM-Driven Context**: Leverage large language models to get deeper insights into the context of your notes, enhancing understanding and discovery of new connections.
+![List of all created Notes, a Note can be selected to show related notes](doc/assets/overviewallnotes.png)  
+*Figure 4: List of all created Notes, a Note can be selected to show related notes*
+
 
 ## Technical Details
 
